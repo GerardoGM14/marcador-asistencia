@@ -1,0 +1,15 @@
+# Comandos para ejecutar el proyecto
+
+TERMINAL 1: BACKEND (Python FastAPI)
+------------------------------------------------------------------
+Desde la carpeta raíz:
+cd backend
+npm install  (solo la primera vez)
+npm run dev
+
+TERMINAL 2: FRONTEND (React + Vite)
+------------------------------------------------------------------
+Desde la carpeta raíz (en una nueva terminal):
+cd frontend
+npm install  (solo la primera vez)
+npm run dev
