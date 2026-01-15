@@ -11,6 +11,8 @@ import Trabajadores from './pages/Trabajadores'
 import RegistroCompra from './pages/RegistroCompra'
 import ListaClientes from './pages/ListaClientes'
 import MonitorTiempoReal from './pages/MonitorTiempoReal'
+import Subsidiados from './pages/Subsidiados'
+import ReporteAsistencia from './pages/ReporteAsistencia'
 
 function App() {
   const location = useLocation();
@@ -42,13 +44,15 @@ function App() {
       {isLoading && <Loader />}
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<Layout />}>
-          <Route index element={<DashboardHome />} />
-          <Route path="menu-rol" element={<MenuRol />} />
-          <Route path="trabajadores" element={<Trabajadores />} />
-          <Route path="registro-compra" element={<RegistroCompra />} />
-          <Route path="lista-clientes" element={<ListaClientes />} />
-          <Route path="monitor" element={<MonitorTiempoReal />} />
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<DashboardHome />} />
+          <Route path="/dashboard/menu-rol" element={<MenuRol />} />
+          <Route path="/gestion/trabajador" element={<Trabajadores />} />
+          <Route path="/dashboard/registro-compra" element={<RegistroCompra />} />
+          <Route path="/gestion/subsidiados" element={<Subsidiados />} />
+          <Route path="/gestion/reporte-asistencia" element={<ReporteAsistencia />} />
+          <Route path="/dashboard/lista-clientes" element={<ListaClientes />} />
+          <Route path="/dashboard/monitor" element={<MonitorTiempoReal />} />
           {/* Placeholder routes for other sidebar items */}
           <Route path="*" element={<div className="p-8">Página en construcción</div>} />
         </Route>

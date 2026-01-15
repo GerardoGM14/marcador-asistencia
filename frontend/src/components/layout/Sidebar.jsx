@@ -19,7 +19,8 @@ import {
   ChevronRight,
   UserPlus,
   Store,
-  Activity
+  Activity,
+  HeartPulse
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -103,6 +104,17 @@ const Sidebar = () => {
           
           <h3 className="text-gray-500 font-semibold text-sm mb-4 px-2 tracking-wider">SEGURIDAD</h3>
 
+          {/* Dashboard Link */}
+          <Link 
+            to="/dashboard"
+            className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors mb-0.5 ${location.pathname === '/dashboard' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:bg-[#2D3748] hover:text-gray-200'}`}
+          >
+            <div className="flex items-center gap-2">
+              <Home className="w-4 h-4" />
+              <span className="font-medium text-sm">Dashboard</span>
+            </div>
+          </Link>
+
           {/* Gestión Group */}
           <div className="mb-1">
             <button 
@@ -118,23 +130,17 @@ const Sidebar = () => {
             
              {openSubmenus.gestion && (
               <div className="pl-3 mt-0.5 space-y-0.5">
-                <Link to="/dashboard/trabajadores" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/dashboard/trabajadores' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                <Link to="/gestion/trabajador" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/trabajador' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
                   <Users className="w-3.5 h-3.5" />
                   <span>Trabajador</span>
                 </Link>
-                <Link to="/dashboard/registro-compra" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/dashboard/registro-compra' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Auditoría de Personal</span>
+                <Link to="/gestion/subsidiados" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/subsidiados' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                  <HeartPulse className="w-3.5 h-3.5" />
+                  <span>Subsidiados</span>
                 </Link>
-                {/* 
-                <Link to="/dashboard/lista-clientes" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/dashboard/lista-clientes' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
-                  <BriefcaseBusiness className="w-3.5 h-3.5" />
-                  <span>Clientes</span>
-                </Link>
-                */}
-                <Link to="/dashboard/monitor" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/dashboard/monitor' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
-                  <Activity className="w-3.5 h-3.5" />
-                  <span>Monitor en Vivo</span>
+                <Link to="/gestion/reporte-asistencia" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/reporte-asistencia' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                  <List className="w-3.5 h-3.5" />
+                  <span>Reporte de Asistencia</span>
                 </Link>
               </div>
              )}

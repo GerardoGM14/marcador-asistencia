@@ -11,9 +11,11 @@ import {
 import NuevoTrabajadorModal from '../components/trabajadores/NuevoTrabajadorModal';
 import estadoActivo from '../assets/state/estado_activo.svg';
 import estadoBaja from '../assets/state/estado_baja.svg';
+import { exportToExcel, exportToJSON } from '../utils/exportHelper';
 
 const Trabajadores = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filters, setFilters] = useState({
@@ -74,8 +76,17 @@ const Trabajadores = () => {
     }
   };
 
+  const handleExport = (type) => {
+    if (type === 'excel') {
+      exportToExcel(filteredTrabajadores, 'trabajadores');
+    } else if (type === 'json') {
+      exportToJSON(filteredTrabajadores, 'trabajadores');
+    }
+    setShowExportMenu(false);
+  };
+
   return (
-    <div className="flex flex-col h-full bg-[#F1F5F9]">
+    <div className="flex flex-col h-full bg-[#EDEDED]">
       {/* Fixed Header Section */}
       <div className="p-6 pb-4 flex-shrink-0">
         {/* Breadcrumbs */}
@@ -93,10 +104,31 @@ const Trabajadores = () => {
             <h1 className="text-2xl font-bold text-gray-900 uppercase">TRABAJADOR</h1>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
-              <Download className="w-4 h-4" />
-              <span className="font-medium">Exportar</span>
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span className="font-medium">Exportar</span>
+              </button>
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-50 py-1">
+                  <button 
+                    onClick={() => handleExport('excel')}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <span className="font-medium">Excel</span>
+                  </button>
+                  <button 
+                    onClick={() => handleExport('json')}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <span className="font-medium">JSON</span>
+                  </button>
+                </div>
+              )}
+            </div>
             <button 
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-[#EC6317] text-white rounded-lg hover:bg-[#d65812] transition-colors shadow-sm"
@@ -236,7 +268,7 @@ const Trabajadores = () => {
                     <img 
                       src={getEstadoIcon(trabajador.estado)} 
                       alt={trabajador.estado} 
-                      className="h-6 w-auto" 
+                      className="h-6 w-auto max-w-none object-contain" 
                     />
                   </td>
                   <td className="py-2.5 px-4 text-right">
