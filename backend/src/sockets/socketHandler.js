@@ -8,6 +8,18 @@ module.exports = (io) => {
             
             // Reenviar a todos los clientes conectados (dashboard)
             io.emit('dashboard_update', data);
+            io.emit('external_system_data', data); // También emitir con el nombre original
+        });
+
+        // Handlers para eventos de usuario específicos
+        socket.on('user:login', (data) => {
+            console.log('Evento user:login recibido:', data);
+            io.emit('user:login', data);
+        });
+
+        socket.on('user:state', (data) => {
+            console.log('Evento user:state recibido:', data);
+            io.emit('user:state', data);
         });
 
         socket.on('disconnect', () => {

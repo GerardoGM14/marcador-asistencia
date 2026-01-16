@@ -65,6 +65,16 @@ export default function Login() {
             localStorage.setItem('user', JSON.stringify(user));
             
             navigate('/dashboard');
+        } else if (email === 'trabajador@fastcloud.com' && password === 'trabajador123') {
+            const user = {
+              id: 2,
+              name: 'Trabajador Demo',
+              email: 'trabajador@fastcloud.com',
+              role: 'worker'
+            };
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            navigate('/dashboard');
         } else {
           setError('Credenciales inválidas (Prueba: admin@fastcloud.com / admin123)');
           hideLoader();

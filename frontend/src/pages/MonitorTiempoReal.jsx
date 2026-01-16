@@ -21,6 +21,30 @@ const MonitorTiempoReal = () => {
       const newLog = {
         id: Date.now(),
         timestamp: new Date().toLocaleTimeString(),
+        event: 'dashboard_update',
+        ...data
+      };
+      setLogs(prev => [newLog, ...prev]);
+    });
+
+    // Escuchar eventos de usuario
+    socket.on('user:login', (data) => {
+      console.log('User Login:', data);
+      const newLog = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        event: 'user:login',
+        ...data
+      };
+      setLogs(prev => [newLog, ...prev]);
+    });
+
+    socket.on('user:state', (data) => {
+      console.log('User State:', data);
+      const newLog = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleTimeString(),
+        event: 'user:state',
         ...data
       };
       setLogs(prev => [newLog, ...prev]);
@@ -30,13 +54,15 @@ const MonitorTiempoReal = () => {
       socket.off('connect');
       socket.off('disconnect');
       socket.off('dashboard_update');
+      socket.off('user:login');
+      socket.off('user:state');
     };
   }, [socket]);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <Activity className="text-blue-600" />
@@ -93,7 +119,7 @@ const MonitorTiempoReal = () => {
               <div key={log.id} className="text-gray-300 hover:bg-[#2d2d2d] p-2 rounded transition-colors border-b border-gray-800 font-mono text-xs">
                 <div className="flex items-center gap-2 mb-1">
                     <span className="text-blue-400">[{log.timestamp}]</span>
-                    <span className="text-green-500 font-bold">» PAYLOAD RECIBIDO</span>
+                    <span className="text-green-500 font-bold">» {log.event ? log.event.toUpperCase() : 'PAYLOAD RECIBIDO'}</span>
                 </div>
                 {/* Mostramos el objeto JSON completo tal cual llega */}
                 <pre className="pl-4 text-yellow-100/80 overflow-x-auto">

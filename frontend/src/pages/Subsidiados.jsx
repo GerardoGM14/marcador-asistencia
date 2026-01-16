@@ -11,6 +11,8 @@ import {
   Calendar
 } from 'lucide-react';
 import NuevoSubsidiadoModal from '../components/subsidiados/NuevoSubsidiadoModal';
+import { workersData } from '../data/workersData';
+import { suspensionTypes } from '../data/suspensionTypes';
 
 const Subsidiados = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,20 +30,64 @@ const Subsidiados = () => {
     dias: ''
   });
   
-  // Mock data matching the requested design
-  const allSubsidiados = Array(50).fill({}).map((_, i) => ({
-    id: i + 1,
-    nombres: 'ALEJOS RODRIGUEZ, JOEL ANTHONY',
-    dni: '79846212',
-    puesto: 'CALIDAD DE SERVICIO',
-    sede: 'MARKETING',
-    turno: 'MAÑANA',
-    tipoSubsidio: i % 2 === 0 ? 'SUBSIDIADO' : 'NO SUBSIDIADO',
-    tipoSuspension: '23 - S.I. DESCANSO VACACIONAL',
-    desde: '18/02/2025',
-    hasta: '20/02/2025',
-    dias: 2
-  }));
+  // Mock data derived from workersData
+  const allSubsidiados = workersData.map((worker, i) => {
+    const isSubsidiado = i % 2 === 0;
+    
+    // Generate random suspension type with number
+    let suspensionType = '-';
+    let desde = '-';
+    let hasta = '-';
+    let dias = '-';
+
+    if (isSubsidiado) {
+      const randomIndex = Math.floor(Math.random() * suspensionTypes.length);
+      const type = suspensionTypes[randomIndex];
+      
+      let displayNum;
+      if (randomIndex < 12) {
+        displayNum = randomIndex + 1;
+      } else {
+        displayNum = 20 + (randomIndex - 12);
+      }
+      
+      const number = displayNum.toString().padStart(2, '0');
+      suspensionType = `${number} - ${type}`;
+
+      // Random dates logic
+      const start = new Date(2025, 0, 1);
+      const end = new Date(2025, 11, 31);
+      const randomStartDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+      const duration = Math.floor(Math.random() * 15) + 1; // 1 to 15 days
+      const randomEndDate = new Date(randomStartDate);
+      randomEndDate.setDate(randomStartDate.getDate() + duration);
+
+      const formatDate = (date) => {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+      };
+
+      desde = formatDate(randomStartDate);
+      hasta = formatDate(randomEndDate);
+      dias = duration;
+    }
+
+    return {
+      id: worker.id,
+      nombres: worker.nombres,
+      dni: worker.dni,
+      puesto: worker.puesto,
+      sede: worker.locacion,
+      turno: worker.turno,
+      tipoSubsidio: isSubsidiado ? 'SUBSIDIADO' : 'NO SUBSIDIADO',
+      tipoSuspension: suspensionType,
+      desde: desde,
+      hasta: hasta,
+      dias: dias
+    };
+  });
 
   const filteredSubsidiados = allSubsidiados.filter(t => {
     const matchesTrabajador = t.nombres.toLowerCase().includes(filters.trabajador.toLowerCase()) || 
@@ -66,33 +112,19 @@ const Subsidiados = () => {
   const currentRows = filteredSubsidiados.slice(indexOfFirstRow, indexOfLastRow);
 
   return (
-    <div className="flex flex-col h-full bg-[#F1F5F9]">
-      {/* Fixed Header Section */}
-      <div className="p-6 pb-4 flex-shrink-0">
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <span>Home</span>
-          <ChevronRight className="w-4 h-4" />
-          <span>Gestión</span>
-          <ChevronRight className="w-4 h-4" />
-          <span className="font-medium text-gray-900">Subsidiados</span>
+    <div className="flex flex-col h-full bg-[#F3F4F6] p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Subsidiados</h1>
+          <p className="text-gray-500 mt-1">Gestión de personal subsidiado</p>
         </div>
-
-        {/* Title and Actions */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 uppercase">SUBSIDIADOS Y NO SUBSIDIADOS</h1>
-          </div>
-          <div className="flex items-center gap-3">
-             <button 
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#EC6317] text-white rounded-lg hover:bg-[#d65812] transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="font-medium">Nuevo Registro</span>
-            </button>
-          </div>
-        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#EC6317] text-white px-4 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#d55814] transition-colors shadow-sm w-full md:w-auto justify-center"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Nuevo Subsidiado</span>
+        </button>
       </div>
 
       {/* Content Area - Single Card */}
@@ -100,18 +132,20 @@ const Subsidiados = () => {
         <div className="bg-white rounded-xl shadow-sm flex flex-col h-full overflow-hidden p-5">
           
           {/* Filters and Period Row */}
-          <div className="flex justify-end items-center gap-3 mb-4">
+          <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-3 mb-4">
                <span className="text-sm font-bold text-gray-700">PERIODO:</span>
-               <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-1.5 shadow-sm">
-                  <span className="text-sm text-gray-700">Enero de 2026</span>
+               <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-1.5 shadow-sm w-full md:w-auto">
+                  <span className="text-sm text-gray-700 flex-1">Enero de 2026</span>
                   <Calendar className="w-4 h-4 text-gray-500" />
                </div>
-               <button className="p-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50">
-                  <Filter className="w-4 h-4 text-gray-600" />
-               </button>
-               <button className="p-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50">
-                  <SlidersHorizontal className="w-4 h-4 text-gray-600" />
-               </button>
+               <div className="flex gap-2 w-full md:w-auto">
+                 <button className="flex-1 md:flex-none p-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 flex justify-center items-center">
+                    <Filter className="w-4 h-4 text-gray-600" />
+                 </button>
+                 <button className="flex-1 md:flex-none p-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 flex justify-center items-center">
+                    <SlidersHorizontal className="w-4 h-4 text-gray-600" />
+                 </button>
+               </div>
           </div>
 
           {/* Scrollable Table Section */}
@@ -125,12 +159,11 @@ const Subsidiados = () => {
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Puesto</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Sede</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none">Turno</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Tipo Subsidio</th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-56 border-none">Tipo Subsidio</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-64 border-none">Tipo Suspensión</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Desde</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Hasta</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none">Días</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-16 border-none rounded-tr-lg"></th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none rounded-tr-lg">Días</th>
                 </tr>
                 {/* Filter Row */}
                 <tr className="border-b border-gray-200 bg-[#F3F4F6]">
@@ -213,7 +246,6 @@ const Subsidiados = () => {
                       className="w-full h-9 px-3 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] shadow-sm bg-white" 
                     />
                   </td>
-                  <td className="px-4 pb-4 pt-0"></td>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -232,10 +264,10 @@ const Subsidiados = () => {
                     <td className="py-2.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.sede}</td>
                     <td className="py-2.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.turno}</td>
                     <td className="py-2.5 px-4">
-                        <span className={`inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-bold border tracking-wide ${
+                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-[11px] font-bold border tracking-wide ${
                             row.tipoSubsidio === 'SUBSIDIADO' 
                                 ? 'bg-[#DCFCE7] text-[#166534] border-[#166534]' 
-                                : 'bg-[#F3F4F6] text-[#4B5563] border-[#9CA3AF]'
+                                : 'bg-sky-100 text-sky-700 border-sky-700'
                         }`}>
                             {row.tipoSubsidio}
                         </span>
@@ -244,11 +276,6 @@ const Subsidiados = () => {
                     <td className="py-2.5 px-4 text-xs text-gray-600 font-medium">{row.desde}</td>
                     <td className="py-2.5 px-4 text-xs text-gray-600 font-medium">{row.hasta}</td>
                     <td className="py-2.5 px-4 text-xs text-gray-600 font-medium">{row.dias}</td>
-                    <td className="py-2.5 px-4 text-right">
-                      <button className="text-gray-500 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -258,12 +285,12 @@ const Subsidiados = () => {
       </div>
 
       {/* Fixed Footer Pagination - Full Width */}
-      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 flex items-center justify-between w-full">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-0">
+        <div className="flex items-center gap-2 text-sm text-gray-500 order-2 md:order-1">
           <span>Mostrando {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredSubsidiados.length)} de {filteredSubsidiados.length} resultados</span>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 order-1 md:order-2">
           <button 
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             disabled={currentPage === 1}
@@ -272,20 +299,22 @@ const Subsidiados = () => {
             <ChevronLeft className="w-4 h-4 text-gray-600" />
           </button>
           
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <div key={page} className="relative group">
-              <button 
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page 
-                    ? 'bg-[#EC6317] text-white' 
-                    : 'hover:bg-gray-50 text-gray-600'
-                }`}
-              >
-                {page}
-              </button>
-            </div>
-          ))}
+          <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-none pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <div key={page} className="relative group flex-shrink-0">
+                <button 
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === page 
+                      ? 'bg-[#EC6317] text-white' 
+                      : 'hover:bg-gray-50 text-gray-600'
+                  }`}
+                >
+                  {page}
+                </button>
+              </div>
+            ))}
+          </div>
 
           <button 
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
@@ -296,7 +325,7 @@ const Subsidiados = () => {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-gray-500 order-3">
           <span>Filas por página</span>
           <select 
             value={rowsPerPage}

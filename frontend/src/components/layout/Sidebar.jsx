@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BriefcaseBusiness, 
   Home, 
@@ -20,11 +20,13 @@ import {
   UserPlus,
   Store,
   Activity,
-  HeartPulse
+  HeartPulse,
+  BarChart3
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import logoFastCloud from '../../assets/logo-fastcloud-dark.png';
 
-const Sidebar = () => {
+const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeMainTab, setActiveMainTab] = useState('security');
   const [openSubmenus, setOpenSubmenus] = useState({
@@ -33,13 +35,18 @@ const Sidebar = () => {
     gestion: false
   });
   const location = useLocation();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isWorkerRole = user.role === 'worker';
+
+  // Close sidebar on route change (mobile only)
+  useEffect(() => {
+    if (window.innerWidth < 768 && setIsMobileOpen) {
+      setIsMobileOpen(false);
+    }
+  }, [location, setIsMobileOpen]);
 
   const primaryItems = [
     { id: 'security', icon: BriefcaseBusiness },
-    { id: 'home', icon: Home },
-    { id: 'cart', icon: ShoppingCart },
-    { id: 'shield', icon: ShieldBan },
-    { id: 'bag', icon: ShoppingBag },
   ];
 
   const toggleSubmenu = (menu) => {
@@ -50,13 +57,22 @@ const Sidebar = () => {
   };
 
   return (
-    <div className={`flex flex-col h-screen bg-[#191A1A] text-gray-300 flex-shrink-0 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-72'} relative`}>
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      <div className={`flex flex-col h-screen bg-[#191A1A] text-gray-300 flex-shrink-0 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-72'} fixed md:static inset-y-0 left-0 z-50 md:relative ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
       
       {/* Header (Full Width) */}
       <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-4'} border-b border-gray-800 flex-shrink-0 relative`}>
         <div className={`flex items-center gap-2 transition-all duration-300 ${isCollapsed ? 'w-7 h-8 overflow-hidden relative justify-center' : ''}`}>
            <img 
-             src="src/assets/logo-fastcloud-dark.png" 
+             src={logoFastCloud} 
              alt="FastCloud" 
              className={`transition-all duration-300 ${
                isCollapsed 
@@ -69,9 +85,17 @@ const Sidebar = () => {
         
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`text-gray-400 hover:text-white transition-all duration-300 z-50 ${isCollapsed ? 'absolute -right-3 top-6 bg-[#2D3748] rounded-full p-1 border border-gray-700 shadow-lg' : ''}`}
+          className={`text-gray-400 hover:text-white transition-all duration-300 z-50 hidden md:block ${isCollapsed ? 'absolute -right-3 top-6 bg-[#2D3748] rounded-full p-1 border border-gray-700 shadow-lg' : ''}`}
         >
           {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-5 h-5" />}
+        </button>
+        
+        {/* Mobile Close Button */}
+        <button 
+          onClick={() => setIsMobileOpen(false)}
+          className="md:hidden text-gray-400 hover:text-white"
+        >
+          <ChevronLeft className="w-6 h-6" />
         </button>
       </div>
 
@@ -102,7 +126,9 @@ const Sidebar = () => {
         {/* Scrollable Menu Area */}
         <div className="flex-1 overflow-y-auto py-6 px-4 custom-scrollbar pb-24 min-w-[220px]">
           
-          <h3 className="text-gray-500 font-semibold text-sm mb-4 px-2 tracking-wider">SEGURIDAD</h3>
+          <h3 className="text-gray-500 font-semibold text-sm mb-4 px-2 tracking-wider">
+            {isWorkerRole ? 'PORTAL TRABAJADOR' : 'SEGURIDAD'}
+          </h3>
 
           {/* Dashboard Link */}
           <Link 
@@ -116,6 +142,7 @@ const Sidebar = () => {
           </Link>
 
           {/* Gestión Group */}
+          {!isWorkerRole && (
           <div className="mb-1">
             <button 
               onClick={() => toggleSubmenu('gestion')}
@@ -142,9 +169,14 @@ const Sidebar = () => {
                   <List className="w-3.5 h-3.5" />
                   <span>Reporte de Asistencia</span>
                 </Link>
+                <Link to="/gestion/productividad" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/productividad' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>Productividad</span>
+                </Link>
               </div>
              )}
           </div>
+          )}
 
           {/* Procesos Group */}
           {/*
@@ -222,7 +254,7 @@ const Sidebar = () => {
       </div>
 
       {/* Storage Widget (Full Width Footer) */}
-      {!isCollapsed && (
+      {!isCollapsed && !isWorkerRole && (
         <div className="p-4 border-t border-gray-800 bg-[#191A1A] flex-shrink-0">
             <div className="flex items-center gap-2 mb-3 text-gray-300">
                 <Cloud size={18} />
@@ -242,6 +274,7 @@ const Sidebar = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 

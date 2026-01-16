@@ -100,11 +100,11 @@ const ListaClientes = () => {
   };
 
   return (
-    <div className="w-full p-6 space-y-6">
+    <div className="w-full p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Top Bar with Tabs and Filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         {/* Tabs */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
            <button 
              onClick={() => setActiveTab('todos')}
              className={`px-4 py-2 text-sm font-medium rounded-md flex items-center gap-2 transition-colors ${

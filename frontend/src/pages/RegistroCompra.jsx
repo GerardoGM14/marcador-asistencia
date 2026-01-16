@@ -248,7 +248,7 @@ const RegistroCompra = () => {
           </button>
           <h1 className="text-xl font-bold text-gray-800">Auditoría de Personal</h1>
         </div>
-        <div className="text-sm text-gray-500 ml-8">
+        <div className="text-sm text-gray-500 ml-2 md:ml-8">
           <span>Gestión</span>
           <span className="mx-2">/</span>
           <span>Clientes</span>

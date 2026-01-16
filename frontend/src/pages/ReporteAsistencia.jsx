@@ -11,6 +11,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { exportToExcel, exportToJSON } from '../utils/exportHelper';
+import { workersData } from '../data/workersData';
 
 const ReporteAsistencia = () => {
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -23,37 +24,63 @@ const ReporteAsistencia = () => {
     jornada: '',
     online: '',
     offline: '',
-    noDefinido: '',
     estado: ''
   });
   
-  // Mock data matching the requested design
-  const allAsistencias = Array(50).fill({}).map((_, i) => {
+  // Mock data derived from workersData
+  const allAsistencias = workersData.map((worker, i) => {
     const estados = ['EN TURNO', 'AUSENTE', 'COMPLETADO'];
     const estado = estados[i % 3];
     
+    // Random variations for time metrics
+    const getRandomTime = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    
+    let online = '-';
+    let offline = '-';
+    let jornadaEstado = '';
+
+    if (estado === 'EN TURNO') {
+        jornadaEstado = 'ACTIVO';
+        online = `${getRandomTime(1, 4)}h ${getRandomTime(10, 50)}m`;
+        offline = `${getRandomTime(1, 20)}m`;
+    } else if (estado === 'COMPLETADO') {
+        jornadaEstado = 'COMPLETADO';
+        online = `${getRandomTime(5, 8)}h ${getRandomTime(10, 50)}m`;
+        offline = `${getRandomTime(10, 45)}m`;
+    } else {
+        // AUSENTE
+        jornadaEstado = '-';
+        online = '-';
+        offline = '-';
+    }
+
     return {
-      id: i + 1,
-      fecha: '20/02/2025',
-      nombres: i % 3 === 0 ? 'PÉREZ GARCÍA, MARIO' : (i % 3 === 1 ? 'FLORES RIVERA, CARLOS' : 'LOPEZ MARTINEZ, SANDRA'),
-      dni: i % 3 === 0 ? '12345678' : (i % 3 === 1 ? '13579864' : '87654321'),
-      locacion: 'NUEVO CHIMBOTE',
-      jornadaHora: i % 3 === 0 ? '14:00' : (i % 3 === 1 ? '11:30' : (estado === 'AUSENTE' ? '-' : '09:00')),
-      jornadaEstado: i % 3 === 0 ? 'ACTIVO' : (i % 3 === 1 ? 'ACTIVO' : (estado === 'AUSENTE' ? '' : 'ACTIVO')),
-      jornadaTurno: i % 3 === 0 ? 'TARDE' : (i % 3 === 1 ? 'TARDE' : 'MAÑANA'),
-      online: estado === 'AUSENTE' ? '-' : (i % 3 === 0 ? '-' : '5h 10m'),
-      offline: estado === 'AUSENTE' ? '-' : (i % 3 === 0 ? '-' : '8m'),
-      noDefinido: estado === 'AUSENTE' ? '-' : (i % 3 === 0 ? '-' : '4m'),
+      id: worker.id,
+      fecha: i % 2 === 0 ? '16/01/2026' : '15/01/2026',
+      nombres: worker.nombres,
+      dni: worker.dni,
+      locacion: worker.locacion,
+      jornadaHora: estado === 'AUSENTE' ? '-' : (i % 2 === 0 ? '08:00' : '14:00'),
+      jornadaEstado: jornadaEstado,
+      jornadaTurno: worker.turno,
+      online: online,
+      offline: offline,
       estado: estado
     };
   });
 
   const filteredAsistencias = allAsistencias.filter(item => {
+    const matchesFecha = item.fecha.includes(filters.fecha);
     const matchesTrabajador = item.nombres.toLowerCase().includes(filters.trabajador.toLowerCase()) || 
                               item.dni.includes(filters.trabajador);
     const matchesLocacion = item.locacion.toLowerCase().includes(filters.locacion.toLowerCase());
-    // Add more filters as needed
-    return matchesTrabajador && matchesLocacion;
+    const matchesJornada = (item.jornadaHora + item.jornadaEstado + item.jornadaTurno).toLowerCase().includes(filters.jornada.toLowerCase());
+    const matchesOnline = item.online.toLowerCase().includes(filters.online.toLowerCase());
+    const matchesOffline = item.offline.toLowerCase().includes(filters.offline.toLowerCase());
+    const matchesEstado = item.estado.toLowerCase().includes(filters.estado.toLowerCase());
+
+    return matchesFecha && matchesTrabajador && matchesLocacion && matchesJornada && 
+           matchesOnline && matchesOffline && matchesEstado;
   });
 
   // Pagination Logic
@@ -66,21 +93,21 @@ const ReporteAsistencia = () => {
     switch(estado) {
       case 'EN TURNO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FEF3C7] text-[#D97706] border border-[#FCD34D]">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FEF3C7] text-[#D97706] border-2 border-[#FCD34D]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
             EN TURNO
           </span>
         );
       case 'AUSENTE':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FEE2E2] text-[#DC2626] border border-[#FECACA]">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FEE2E2] text-[#DC2626] border-2 border-[#FECACA]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
             AUSENTE
           </span>
         );
       case 'COMPLETADO':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#DCFCE7] text-[#16A34A] border border-[#86EFAC]">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#DCFCE7] text-[#16A34A] border-2 border-[#86EFAC]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
             COMPLETADO
           </span>
@@ -102,7 +129,7 @@ const ReporteAsistencia = () => {
   return (
     <div className="flex flex-col h-full bg-[#EDEDED]">
       {/* Fixed Header Section */}
-      <div className="p-6 pb-4 flex-shrink-0">
+      <div className="p-4 md:p-6 pb-4 flex-shrink-0">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
           <span>Home</span>
@@ -166,7 +193,7 @@ const ReporteAsistencia = () => {
                <div className="relative flex-1 md:w-auto">
                   <input 
                     type="text" 
-                    value="20/02/2025" 
+                    value="16/01/2026" 
                     readOnly
                     className="w-full md:w-40 pl-4 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none bg-white shadow-sm text-gray-700"
                   />
@@ -192,11 +219,9 @@ const ReporteAsistencia = () => {
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[280px] border-none">Trabajador</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-48 border-none">Locación</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-48 border-none">Jornada</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Online</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Offline</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">No definido</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Estado</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none rounded-tr-lg"></th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Horas Trabajadas</th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Horas Tardanza</th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none rounded-tr-lg">Estado</th>
                 </tr>
                 {/* Filter Row */}
                 <tr className="border-b border-gray-200 bg-[#F3F4F6]">
@@ -204,7 +229,15 @@ const ReporteAsistencia = () => {
                     <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
                   </td>
                   <td className="px-4 pb-4 pt-0">
-                    <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Buscar..." 
+                        value={filters.fecha}
+                        onChange={(e) => setFilters({...filters, fecha: e.target.value})}
+                        className="w-full px-3 h-9 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm placeholder:text-gray-400 bg-white"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 pb-4 pt-0">
                     <div className="relative">
@@ -219,24 +252,60 @@ const ReporteAsistencia = () => {
                     </div>
                   </td>
                   <td className="px-4 pb-4 pt-0">
-                    <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Buscar..." 
+                        value={filters.locacion}
+                        onChange={(e) => setFilters({...filters, locacion: e.target.value})}
+                        className="w-full px-3 h-9 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm placeholder:text-gray-400 bg-white"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 pb-4 pt-0">
-                    <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Buscar..." 
+                        value={filters.jornada}
+                        onChange={(e) => setFilters({...filters, jornada: e.target.value})}
+                        className="w-full px-3 h-9 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm placeholder:text-gray-400 bg-white"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 pb-4 pt-0">
-                    <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Buscar..." 
+                        value={filters.online}
+                        onChange={(e) => setFilters({...filters, online: e.target.value})}
+                        className="w-full px-3 h-9 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm placeholder:text-gray-400 bg-white"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 pb-4 pt-0">
-                    <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Buscar..." 
+                        value={filters.offline}
+                        onChange={(e) => setFilters({...filters, offline: e.target.value})}
+                        className="w-full px-3 h-9 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm placeholder:text-gray-400 bg-white"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 pb-4 pt-0">
-                    <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Buscar..." 
+                        value={filters.estado}
+                        onChange={(e) => setFilters({...filters, estado: e.target.value})}
+                        className="w-full px-3 h-9 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm placeholder:text-gray-400 bg-white"
+                      />
+                    </div>
                   </td>
-                  <td className="px-4 pb-4 pt-0">
-                    <div className="h-9 border border-gray-300 rounded-lg bg-white shadow-sm"></div>
-                  </td>
-                  <td className="px-4 pb-4 pt-0"></td>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -261,19 +330,8 @@ const ReporteAsistencia = () => {
                     </td>
                     <td className="py-3 px-4 text-sm font-bold text-green-600">{item.online}</td>
                     <td className="py-3 px-4 text-sm font-bold text-[#EC6317]">{item.offline}</td>
-                    <td className="py-3 px-4 text-sm font-medium text-gray-500">{item.noDefinido}</td>
                     <td className="py-3 px-4">
                       {getEstadoBadge(item.estado)}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="text-gray-500 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="text-gray-500 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
-                      </div>
                     </td>
                   </tr>
                 ))}
@@ -284,12 +342,12 @@ const ReporteAsistencia = () => {
       </div>
 
       {/* Fixed Footer Pagination - Full Width */}
-      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 flex items-center justify-between w-full">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-0">
+        <div className="flex items-center gap-2 text-sm text-gray-500 order-2 md:order-1">
           <span>Mostrando {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredAsistencias.length)} de {filteredAsistencias.length} resultados</span>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 order-1 md:order-2">
           <button 
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             disabled={currentPage === 1}
@@ -298,20 +356,22 @@ const ReporteAsistencia = () => {
             <ChevronLeft className="w-4 h-4 text-gray-600" />
           </button>
           
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <div key={page} className="relative group">
-              <button 
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page 
-                    ? 'bg-[#EC6317] text-white' 
-                    : 'hover:bg-gray-50 text-gray-600'
-                }`}
-              >
-                {page}
-              </button>
-            </div>
-          ))}
+          <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-none pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <div key={page} className="relative group flex-shrink-0">
+                <button 
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === page 
+                      ? 'bg-[#EC6317] text-white' 
+                      : 'hover:bg-gray-50 text-gray-600'
+                  }`}
+                >
+                  {page}
+                </button>
+              </div>
+            ))}
+          </div>
 
           <button 
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
@@ -322,7 +382,7 @@ const ReporteAsistencia = () => {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-gray-500 order-3">
           <span>Filas por página</span>
           <select 
             value={rowsPerPage}

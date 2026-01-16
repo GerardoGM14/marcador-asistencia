@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
-import { X, User, Briefcase, Check, UserPlus, ChevronDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, User, Briefcase, Check, UserPlus, ChevronDown, Search } from 'lucide-react';
+import { workersData } from '../../data/workersData';
 
 const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('personales');
+  const [isPuestoDropdownOpen, setIsPuestoDropdownOpen] = useState(false);
+  const [puestoSearchTerm, setPuestoSearchTerm] = useState('');
+  const puestoDropdownRef = useRef(null);
+
   const [formData, setFormData] = useState({
     tipoDocumento: 'DNI',
     documento: '',
@@ -15,7 +20,6 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
     correo: '',
     // Laborales
     contratacion: 'PLANILLA',
-    regimenLaboral: '',
     puesto: '',
     locacion: '',
     fechaIngreso: '',
@@ -27,7 +31,29 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
     diaDescanso: ''
   });
 
+  // Click outside listener
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (puestoDropdownRef.current && !puestoDropdownRef.current.contains(event.target)) {
+        setIsPuestoDropdownOpen(false);
+      }
+    };
+
+    if (isPuestoDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPuestoDropdownOpen]);
+
   if (!isOpen) return null;
+
+  // Obtener puestos únicos
+  const uniquePuestos = [...new Set(workersData.map(w => w.puesto))].sort();
+  const filteredPuestos = uniquePuestos.filter(puesto => 
+    puesto.toLowerCase().includes(puestoSearchTerm.toLowerCase())
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -50,10 +76,45 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
       if (!/^\d*$/.test(value)) return;
     }
 
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: value
+      };
+
+      // Lógica automática de horarios y jornadas
+      if (name === 'turno' || name === 'tipoJornada') {
+        const currentTurno = name === 'turno' ? value : prev.turno;
+        const currentJornada = name === 'tipoJornada' ? value : prev.tipoJornada;
+
+        if (currentTurno === 'manana') {
+          if (currentJornada === 'completa') {
+            newData.horaEntrada = '08:00';
+            newData.horaSalida = '17:00';
+          } else if (currentJornada === 'parcial') {
+            newData.horaEntrada = '08:00';
+            newData.horaSalida = '13:00';
+          }
+        } else if (currentTurno === 'tarde') {
+          if (currentJornada === 'completa') {
+            newData.horaEntrada = '14:00';
+            newData.horaSalida = '22:00';
+          } else if (currentJornada === 'parcial') {
+            newData.horaEntrada = '14:00';
+            newData.horaSalida = '18:00';
+          }
+        } else if (currentTurno === 'noche') {
+          newData.horaEntrada = '18:00';
+          if (currentJornada === 'completa') {
+            newData.horaSalida = '05:00';
+          } else if (currentJornada === 'parcial') {
+            newData.horaSalida = '22:00';
+          }
+        }
+      }
+
+      return newData;
+    });
   };
 
   // Validaciones
@@ -85,7 +146,6 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
 
   const isLaboralesValid = 
     formData.contratacion && 
-    formData.regimenLaboral && 
     formData.puesto && 
     formData.locacion && 
     formData.fechaIngreso && 
@@ -367,45 +427,69 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Régimen Laboral */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-600">Régimen Laboral</label>
-                  <div className="relative">
-                    <select
-                      name="regimenLaboral"
-                      value={formData.regimenLaboral}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm appearance-none text-gray-500 bg-white"
-                    >
-                      <option value="">Seleccionar</option>
-                      <option value="general">General</option>
-                      <option value="mype">MYPE</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-
                 {/* Puesto */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5" ref={puestoDropdownRef}>
                   <label className="text-sm font-medium text-gray-600">Puesto</label>
                   <div className="relative">
-                    <select
-                      name="puesto"
-                      value={formData.puesto}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm appearance-none text-gray-500 bg-white"
+                    <button
+                      type="button"
+                      onClick={() => setIsPuestoDropdownOpen(!isPuestoDropdownOpen)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm bg-white text-left flex items-center justify-between"
                     >
-                      <option value="">Seleccionar</option>
-                      <option value="desarrollador">Desarrollador</option>
-                      <option value="analista">Analista</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      <span className={formData.puesto ? 'text-gray-700' : 'text-gray-500'}>
+                        {formData.puesto || 'Seleccionar puesto'}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    </button>
+
+                    {isPuestoDropdownOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-100">
+                        <div className="p-2 border-b border-gray-100">
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <input
+                              type="text"
+                              value={puestoSearchTerm}
+                              onChange={(e) => setPuestoSearchTerm(e.target.value)}
+                              placeholder="Buscar puesto..."
+                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-md focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317]"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="overflow-y-auto flex-1">
+                          {filteredPuestos.length > 0 ? (
+                            filteredPuestos.map((puesto, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => {
+                                  setFormData(prev => ({ ...prev, puesto }));
+                                  setIsPuestoDropdownOpen(false);
+                                  setPuestoSearchTerm('');
+                                }}
+                                className={`w-full px-3 py-2 text-sm text-left hover:bg-gray-50 flex items-center justify-between ${
+                                  formData.puesto === puesto ? 'bg-orange-50 text-[#EC6317]' : 'text-gray-700'
+                                }`}
+                              >
+                                <span>{puesto}</span>
+                                {formData.puesto === puesto && <Check className="w-4 h-4" />}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-3 py-4 text-center text-xs text-gray-500">
+                              No se encontraron resultados
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Locación */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-gray-600">Locación</label>
+                  <label className="text-sm font-medium text-gray-600">Sede</label>
                   <div className="relative">
                     <select
                       name="locacion"
@@ -414,8 +498,11 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm appearance-none text-gray-500 bg-white"
                     >
                       <option value="">Seleccionar</option>
-                      <option value="lima">Lima</option>
-                      <option value="arequipa">Arequipa</option>
+                      <option value="LIMA">LIMA</option>
+                      <option value="AREQUIPA">AREQUIPA</option>
+                      <option value="TRUJILLO">TRUJILLO</option>
+                      <option value="CUSCO">CUSCO</option>
+                      <option value="PIURA">PIURA</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
@@ -470,6 +557,7 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
                       <option value="">Seleccionar</option>
                       <option value="manana">Mañana</option>
                       <option value="tarde">Tarde</option>
+                      <option value="noche">Noche</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
@@ -534,8 +622,13 @@ const NuevoTrabajadorModal = ({ isOpen, onClose }) => {
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] shadow-sm appearance-none text-gray-500 bg-white"
                     >
                       <option value="">Seleccionar</option>
-                      <option value="domingo">Domingo</option>
-                      <option value="sabado">Sábado</option>
+                      <option value="Lunes">Lunes</option>
+                      <option value="Martes">Martes</option>
+                      <option value="Miércoles">Miércoles</option>
+                      <option value="Jueves">Jueves</option>
+                      <option value="Viernes">Viernes</option>
+                      <option value="Sábado">Sábado</option>
+                      <option value="Domingo">Domingo</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>

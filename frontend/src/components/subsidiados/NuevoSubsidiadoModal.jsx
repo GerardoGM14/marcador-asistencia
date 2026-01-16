@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { X, Search, Calendar, Check, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Search, Calendar, Check, Plus, ChevronDown } from 'lucide-react';
+import { suspensionTypes } from '../../data/suspensionTypes';
 
 const NuevoSubsidiadoModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,26 @@ const NuevoSubsidiadoModal = ({ isOpen, onClose }) => {
     dias: '',
     observacion: ''
   });
+  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   // Calculate days when dates change
   useEffect(() => {
@@ -138,18 +159,45 @@ const NuevoSubsidiadoModal = ({ isOpen, onClose }) => {
           {/* Field: Tipo de suspensión Laboral */}
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-600">Tipo de suspensión Laboral</label>
-            <select 
-              name="tipoSuspension"
-              value={formData.tipoSuspension}
-              onChange={handleChange}
-              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] bg-white text-gray-700 appearance-none"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
-            >
-              <option value="" disabled>Seleccionar</option>
-              <option value="20">20 - S.I. ENFERMEDAD</option>
-              <option value="21">21 - S.I. MATERNIDAD</option>
-              <option value="23">23 - S.I. DESCANSO VACACIONAL</option>
-            </select>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] focus:ring-1 focus:ring-[#EC6317] bg-white text-gray-700 flex items-center justify-between"
+              >
+                <span className="truncate">
+                  {formData.tipoSuspension || "Seleccionar"}
+                </span>
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100">
+                  {suspensionTypes.map((type, index) => {
+                    let displayNum;
+                    if (index < 12) {
+                      displayNum = index + 1;
+                    } else {
+                      displayNum = 20 + (index - 12);
+                    }
+                    const number = displayNum.toString().padStart(2, '0');
+                    const fullText = `${number} - ${type}`;
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, tipoSuspension: fullText }));
+                          setIsDropdownOpen(false);
+                        }}
+                        className="px-3 py-2 text-sm text-gray-700 hover:bg-[#FFF0E6] hover:text-[#EC6317] cursor-pointer transition-colors border-b border-gray-50 last:border-none"
+                      >
+                        {fullText}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Row: Dates and Days */}

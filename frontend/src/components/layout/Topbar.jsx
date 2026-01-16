@@ -1,18 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
-import { Building2, MapPin, Search, Bell, ChevronDown, User, Settings, Lock, HelpCircle, LogOut } from 'lucide-react';
+import { Building2, MapPin, Search, Bell, ChevronDown, User, Settings, Lock, HelpCircle, LogOut, Menu } from 'lucide-react';
 import ConfirmationModal from '../common/ConfirmationModal';
 
 // Importamos la imagen local que subiste
 import logoutIllustration from '../../assets/modal/icono_logout.svg';
 
-const Topbar = () => {
+const Topbar = ({ onMenuClick }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const getInitialLocation = () => {
+    const stored = localStorage.getItem('selectedLocation');
+    return (stored === 'TODOS' || !stored) ? 'LIMA' : stored;
+  };
+  const [currentLocation, setCurrentLocation] = useState(getInitialLocation());
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const { showLoader } = useLoading();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isWorker = user.role === 'worker';
+  const avatarUrl = isWorker 
+    ? "https://api.dicebear.com/7.x/notionists/svg?seed=Worker" 
+    : "https://api.dicebear.com/7.x/notionists/svg?seed=Felix";
 
   const handleLogoutClick = () => {
     setIsLogoutModalOpen(true);
@@ -32,6 +42,19 @@ const Topbar = () => {
     }, 1000);
   };
 
+  // Listen for location changes
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const newLocation = localStorage.getItem('selectedLocation');
+      if (newLocation) {
+        setCurrentLocation(newLocation === 'TODOS' ? 'LIMA' : newLocation);
+      }
+    };
+
+    window.addEventListener('locationChanged', handleLocationChange);
+    return () => window.removeEventListener('locationChanged', handleLocationChange);
+  }, []);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,12 +70,20 @@ const Topbar = () => {
   }, []);
 
   return (
-    <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0 z-20 relative shadow-sm">
+    <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0 z-20 relative shadow-sm">
       {/* Left Section: Selectors */}
       <div className="flex items-center h-full">
         
+        {/* Mobile Menu Button */}
+        <button 
+          className="mr-3 md:hidden text-gray-500 hover:text-gray-700 p-1"
+          onClick={onMenuClick}
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         {/* Empresa Selector */}
-        <div className="flex items-center gap-3 cursor-pointer group pr-2">
+        <div className="flex items-center gap-3 cursor-pointer group pr-2 hidden sm:flex">
           <Building2 className="w-5 h-5 text-gray-500 group-hover:text-[#E17100] transition-colors stroke-[1.5]" />
           <div className="flex flex-col justify-center">
             <span className="text-[10px] text-gray-500 font-medium leading-tight">Empresa</span>
@@ -64,15 +95,15 @@ const Topbar = () => {
         </div>
 
         {/* Divider */}
-        <div className="h-6 w-px bg-gray-200 mx-4"></div>
+        <div className="h-6 w-px bg-gray-200 mx-4 hidden sm:block"></div>
 
         {/* Sucursal Selector */}
-        <div className="flex items-center gap-3 cursor-pointer group pl-2">
+        <div className="flex items-center gap-3 cursor-pointer group pl-2 hidden sm:flex">
           <MapPin className="w-5 h-5 text-gray-500 group-hover:text-[#E17100] transition-colors stroke-[1.5]" />
           <div className="flex flex-col justify-center">
             <span className="text-[10px] text-gray-500 font-medium leading-tight">Sucursal</span>
             <div className="flex items-center gap-1.5">
-               <span className="text-xs font-bold text-gray-800 leading-tight group-hover:text-[#E17100] transition-colors">JR. MOQUEGUA 302 | CHIMBOTE</span>
+               <span className="text-xs font-bold text-gray-800 leading-tight group-hover:text-[#E17100] transition-colors">{currentLocation}</span>
                <ChevronDown className="w-3 h-3 text-gray-400 mt-0.5" />
             </div>
           </div>
@@ -98,7 +129,7 @@ const Topbar = () => {
                 className="w-8 h-8 rounded-full bg-gray-900 overflow-hidden border border-gray-200 cursor-pointer hover:ring-2 hover:ring-[#E17100] hover:ring-offset-1 transition-all flex items-center justify-center focus:outline-none"
             >
                <img 
-                  src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" 
+                  src={avatarUrl}
                   alt="User Avatar" 
                   className="w-full h-full object-cover bg-gray-100"
                />
@@ -112,14 +143,14 @@ const Topbar = () => {
                     <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
                          <div className="w-9 h-9 rounded-full bg-gray-900 overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center">
                             <img 
-                                src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" 
+                                src={avatarUrl}
                                 alt="User Avatar" 
                                 className="w-full h-full object-cover bg-gray-100"
                             />
                          </div>
                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">Luis Carlos</p>
-                            <p className="text-xs text-gray-500 truncate">admin@fastcloud.com</p>
+                            <p className="text-sm font-semibold text-gray-900 truncate">{user.name || 'Usuario'}</p>
+                            <p className="text-xs text-gray-500 truncate">{user.email || 'user@fastcloud.com'}</p>
                          </div>
                     </div>
 

@@ -13,6 +13,8 @@ import estadoActivo from '../assets/state/estado_activo.svg';
 import estadoBaja from '../assets/state/estado_baja.svg';
 import { exportToExcel, exportToJSON } from '../utils/exportHelper';
 
+import { workersData } from '../data/workersData';
+
 const Trabajadores = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -29,27 +31,11 @@ const Trabajadores = () => {
     estado: 'TODOS'
   });
   
-  // Mock data matching the requested design
-  const allTrabajadores = Array(50).fill({
-    id: 1,
-    nombres: 'ALEJOS RODRIGUEZ, JOEL ANTHONY',
-    dni: '79846212',
-    contratacion: 'PLANILLA',
-    puesto: 'DIRECTORA',
-    locacion: 'PLAZA MAYOR',
-    turno: 'MAÑANA',
-    horario: '08:00 - 17:00',
-    descanso: 'Lunes',
-    estado: 'ACTIVO'
-  }).map((t, i) => ({
-    ...t,
-    id: i + 1,
-    estado: i % 4 === 2 ? 'BAJA' : 'ACTIVO' // Varied status
-  }));
+  // Use shared mock data
+  const allTrabajadores = workersData;
 
   const filteredTrabajadores = allTrabajadores.filter(t => {
-    const matchesNombre = t.nombres.toLowerCase().includes(filters.nombre.toLowerCase()) || 
-                         t.dni.includes(filters.nombre);
+    const matchesNombre = t.nombres.toLowerCase().includes(filters.nombre.toLowerCase()) || t.dni.includes(filters.nombre);
     const matchesContratacion = filters.contratacion === 'TODOS' || t.contratacion === filters.contratacion;
     const matchesPuesto = t.puesto.toLowerCase().includes(filters.puesto.toLowerCase());
     const matchesLocacion = t.locacion.toLowerCase().includes(filters.locacion.toLowerCase());
@@ -88,7 +74,7 @@ const Trabajadores = () => {
   return (
     <div className="flex flex-col h-full bg-[#EDEDED]">
       {/* Fixed Header Section */}
-      <div className="p-6 pb-4 flex-shrink-0">
+      <div className="p-4 md:p-6 pb-4 flex-shrink-0">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
           <span>Home</span>
@@ -154,12 +140,11 @@ const Trabajadores = () => {
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[300px] border-none">Trabajador</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Contratación</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Puesto</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Locación</th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none w-24">Locación</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none">Turno</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-28 border-none">Horario</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Día de descanso</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Estado</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none rounded-tr-lg"></th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none rounded-tr-lg">Estado</th>
                 </tr>
                 {/* Filter Row - Integrated into header visually */}
                 <tr className="border-b border-gray-200 bg-[#F3F4F6]">
@@ -239,7 +224,6 @@ const Trabajadores = () => {
                     <option value="BAJA">BAJA</option>
                   </select>
                 </td>
-                <td className="px-4 pb-4 pt-0"></td>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -271,16 +255,6 @@ const Trabajadores = () => {
                       className="h-6 w-auto max-w-none object-contain" 
                     />
                   </td>
-                  <td className="py-2.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="text-gray-500 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="text-gray-500 hover:text-gray-700 transition-colors p-1.5 rounded-full hover:bg-gray-100">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -290,12 +264,12 @@ const Trabajadores = () => {
       </div>
 
       {/* Fixed Footer Pagination - Full Width */}
-      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 flex items-center justify-between w-full">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 flex flex-col md:flex-row items-center justify-between w-full gap-4 md:gap-0">
+        <div className="flex items-center gap-2 text-sm text-gray-500 order-2 md:order-1">
           <span>Mostrando {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredTrabajadores.length)} de {filteredTrabajadores.length} resultados</span>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 order-1 md:order-2">
           <button 
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             disabled={currentPage === 1}
@@ -304,25 +278,27 @@ const Trabajadores = () => {
             <ChevronLeft className="w-4 h-4 text-gray-600" />
           </button>
           
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <div key={page} className="relative group">
-              <button 
-                onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page 
-                    ? 'bg-[#EC6317] text-white' 
-                    : 'hover:bg-gray-50 text-gray-600'
-                }`}
-              >
-                {page}
-              </button>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none shadow-sm">
-                Página {page}
-                {/* Triangle arrow */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+          <div className="flex gap-1 overflow-x-auto max-w-[200px] md:max-w-none pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <div key={page} className="relative group flex-shrink-0">
+                <button 
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === page 
+                      ? 'bg-[#EC6317] text-white' 
+                      : 'hover:bg-gray-50 text-gray-600'
+                  }`}
+                >
+                  {page}
+                </button>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none shadow-sm">
+                  Página {page}
+                  {/* Triangle arrow */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           <button 
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
@@ -333,7 +309,7 @@ const Trabajadores = () => {
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-gray-500 order-3">
           <span>Filas por página</span>
           <select 
             value={rowsPerPage}
