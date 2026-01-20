@@ -125,6 +125,7 @@ app.post('/api/auth/login', async (req, res) => {
     return res.status(401).json({ message: 'Credenciales inválidas' });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Accesible en red: http://192.168.0.74:${PORT}`);
 });

@@ -151,7 +151,7 @@ export default function Login() {
                 alt="FastCloud Logo" 
                 className="h-24 md:h-28 w-auto object-contain mb-[-20px] md:mb-[-25px]" 
               />
-              <div className="text-[#383A3D] qtext-base md:text-lg mt-0 ml-16 font-medium tracking-wide relative -top-2">Auditoría de Personal</div>
+              <div className="text-[#383A3D] text-base md:text-lg mt-0 mr-20 font-medium tracking-wide relative -top-1">Timer</div>
             </div>
           </div>
 

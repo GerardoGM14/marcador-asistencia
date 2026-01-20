@@ -33,7 +33,7 @@ const ListaClientes = () => {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/clients');
+      const response = await fetch('http://192.168.0.74:3000/api/clients');
       if (response.ok) {
         const data = await response.json();
         setClients(data);
@@ -57,7 +57,7 @@ const ListaClientes = () => {
     if (!clientToDelete) return;
     
     try {
-      const response = await fetch(`http://localhost:3000/api/clients/${clientToDelete}`, {
+      const response = await fetch(`http://192.168.0.74:3000/api/clients/${clientToDelete}`, {
         method: 'DELETE'
       });
 

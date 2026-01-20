@@ -206,7 +206,7 @@ const RegistroCompra = () => {
         formDataToSend.append('tURLDocumentacion', file);
       });
 
-      const response = await fetch('http://localhost:3000/api/clients', {
+      const response = await fetch('http://192.168.0.74:3000/api/clients', {
         method: 'POST',
         body: formDataToSend
       });

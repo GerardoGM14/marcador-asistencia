@@ -112,19 +112,31 @@ const Subsidiados = () => {
   const currentRows = filteredSubsidiados.slice(indexOfFirstRow, indexOfLastRow);
 
   return (
-    <div className="flex flex-col h-full bg-[#F3F4F6] p-4 md:p-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 mb-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Subsidiados</h1>
-          <p className="text-gray-500 mt-1">Gestión de personal subsidiado</p>
+    <div className="flex flex-col h-full bg-[#EDEDED]">
+      {/* Fixed Header Section */}
+      <div className="p-4 md:p-6 pb-4 flex-shrink-0">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+          <span>Home</span>
+          <ChevronRight className="w-4 h-4" />
+          <span>Gestión</span>
+          <ChevronRight className="w-4 h-4" />
+          <span className="font-medium text-gray-900">Subsidiados</span>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#EC6317] text-white px-4 py-2.5 rounded-lg flex items-center gap-2 hover:bg-[#d55814] transition-colors shadow-sm w-full md:w-auto justify-center"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Nuevo Subsidiado</span>
-        </button>
+
+        {/* Title and Actions */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 uppercase">SUBSIDIADOS</h1>
+          </div>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#EC6317] text-white rounded-lg hover:bg-[#d65812] transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="font-medium">Nuevo Subsidiado</span>
+          </button>
+        </div>
       </div>
 
       {/* Content Area - Single Card */}
@@ -154,16 +166,16 @@ const Subsidiados = () => {
               <thead className="bg-[#F3F4F6] sticky top-0 z-10">
                 {/* Header Titles */}
                 <tr>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-16 border-none rounded-tl-lg">#</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[280px] border-none">Trabajador</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Puesto</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Sede</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none">Turno</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-56 border-none">Tipo Subsidio</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-64 border-none">Tipo Suspensión</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Desde</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Hasta</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none rounded-tr-lg">Días</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-16 border-none rounded-tl-lg">#</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[280px] border-none">Trabajador</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Puesto</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Sede</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none">Turno</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-56 border-none">Tipo Subsidio</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-64 border-none">Tipo Suspensión</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Desde</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Hasta</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none rounded-tr-lg">Días</th>
                 </tr>
                 {/* Filter Row */}
                 <tr className="border-b border-gray-200 bg-[#F3F4F6]">
@@ -251,19 +263,19 @@ const Subsidiados = () => {
               <tbody className="divide-y divide-gray-100">
                 {currentRows.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-200 transition-colors bg-white even:bg-gray-100 border-b border-gray-100 last:border-none">
-                    <td className="py-2.5 px-4 text-sm text-gray-600 text-center">{row.id}</td>
-                    <td className="py-2.5 px-4">
+                    <td className="py-1.5 px-4 text-sm text-gray-600 text-center">{row.id}</td>
+                    <td className="py-1.5 px-4">
                       <div className="flex flex-col">
                         <span className="font-bold text-gray-900 text-sm uppercase leading-tight">{row.nombres}</span>
                         <span className="text-xs text-gray-500 font-medium leading-none">DNI: {row.dni}</span>
                       </div>
                     </td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 uppercase leading-tight font-medium">
+                    <td className="py-1.5 px-4 text-xs text-gray-600 uppercase leading-tight font-medium">
                       {row.puesto}
                     </td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.sede}</td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.turno}</td>
-                    <td className="py-2.5 px-4">
+                    <td className="py-1.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.sede}</td>
+                    <td className="py-1.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.turno}</td>
+                    <td className="py-1.5 px-4">
                         <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-[11px] font-bold border tracking-wide ${
                             row.tipoSubsidio === 'SUBSIDIADO' 
                                 ? 'bg-[#DCFCE7] text-[#166534] border-[#166534]' 
@@ -272,10 +284,10 @@ const Subsidiados = () => {
                             {row.tipoSubsidio}
                         </span>
                     </td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.tipoSuspension}</td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 font-medium">{row.desde}</td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 font-medium">{row.hasta}</td>
-                    <td className="py-2.5 px-4 text-xs text-gray-600 font-medium">{row.dias}</td>
+                    <td className="py-1.5 px-4 text-xs text-gray-600 uppercase font-medium">{row.tipoSuspension}</td>
+                    <td className="py-1.5 px-4 text-xs text-gray-600 font-medium">{row.desde}</td>
+                    <td className="py-1.5 px-4 text-xs text-gray-600 font-medium">{row.hasta}</td>
+                    <td className="py-1.5 px-4 text-xs text-gray-600 font-medium">{row.dias}</td>
                   </tr>
                 ))}
               </tbody>

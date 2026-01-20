@@ -21,7 +21,8 @@ import {
   Store,
   Activity,
   HeartPulse,
-  BarChart3
+  BarChart3,
+  Monitor
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import logoFastCloud from '../../assets/logo-fastcloud-dark.png';
@@ -172,6 +173,14 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 <Link to="/gestion/productividad" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/productividad' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
                   <BarChart3 className="w-3.5 h-3.5" />
                   <span>Productividad</span>
+                </Link>
+                <Link to="/gestion/usuarios" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/usuarios' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Usuarios</span>
+                </Link>
+                <Link to="/gestion/monitoreo" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/monitoreo' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                  <Monitor className="w-3.5 h-3.5" />
+                  <span>Monitoreo</span>
                 </Link>
               </div>
              )}

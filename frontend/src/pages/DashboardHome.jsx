@@ -73,6 +73,34 @@ const LocationFilter = ({ value, onChange }) => {
   );
 };
 
+const CustomPieTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    // Green (Asistencia) -> Right
+    // Orange (Tardanza) -> Left
+    // Gray (Inasistencia) -> Right
+    const isTardanza = data.name === 'Tardanza';
+    
+    return (
+      <div 
+        className="bg-white p-3 rounded-lg shadow-lg border border-gray-100 text-xs z-50 whitespace-nowrap"
+        style={{
+          transform: isTardanza ? 'translateX(-130%)' : 'translateX(20px)',
+        }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: data.payload.color }}></div>
+            <p className="font-bold text-gray-900">{data.name}</p>
+        </div>
+        <p className="text-gray-600 pl-4">
+          {data.value} <span className="text-gray-400 font-normal">({data.payload.percentage}%)</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const DashboardHome = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isWorker = user.role === 'worker';
@@ -840,6 +868,10 @@ const DashboardHome = () => {
                                     <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
                                 ))}
                             </Pie>
+                            <RechartsTooltip 
+                                content={<CustomPieTooltip />} 
+                                allowEscapeViewBox={{ x: true, y: true }}
+                            />
                         </PieChart>
                     </ResponsiveContainer>
                     {/* Center Text */}

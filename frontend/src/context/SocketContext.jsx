@@ -12,7 +12,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     // Conectar al backend (ajusta la URL si es necesario)
-    const newSocket = io('http://localhost:3000');
+    const newSocket = io('http://192.168.0.74:3000');
     setSocket(newSocket);
 
     // Listeners globales para depuración

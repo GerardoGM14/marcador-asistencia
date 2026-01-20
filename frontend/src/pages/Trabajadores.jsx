@@ -136,15 +136,15 @@ const Trabajadores = () => {
               <thead className="bg-[#F3F4F6] sticky top-0 z-10">
                 {/* Header Titles */}
                 <tr>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none rounded-tl-lg">#</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[300px] border-none">Trabajador</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Contratación</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Puesto</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none w-24">Locación</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none">Turno</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-28 border-none">Horario</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Día de descanso</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider border-none rounded-tr-lg">Estado</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none rounded-tl-lg">#</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[300px] border-none">Trabajador</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Contratación</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none">Puesto</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none w-24">Locación</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none">Turno</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-28 border-none">Horario</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-48 border-none">Día de descanso</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none rounded-tr-lg">Estado</th>
                 </tr>
                 {/* Filter Row - Integrated into header visually */}
                 <tr className="border-b border-gray-200 bg-[#F3F4F6]">
@@ -229,26 +229,26 @@ const Trabajadores = () => {
             <tbody className="divide-y divide-gray-100">
               {currentRows.map((trabajador) => (
                 <tr key={trabajador.id} className="hover:bg-gray-200 transition-colors bg-white even:bg-gray-100 border-b border-gray-100 last:border-none">
-                  <td className="py-2.5 px-4 text-sm text-gray-600 text-center">{trabajador.id}</td>
-                  <td className="py-2.5 px-4">
+                  <td className="py-1.5 px-4 text-sm text-gray-600 text-center">{trabajador.id}</td>
+                  <td className="py-1.5 px-4">
                     <div className="flex flex-col">
                       <span className="font-bold text-gray-900 text-sm uppercase leading-tight">{trabajador.nombres}</span>
                       <span className="text-xs text-gray-500 font-medium leading-none">DNI: {trabajador.dni}</span>
                     </div>
                   </td>
-                  <td className="py-2.5 px-4">
+                  <td className="py-1.5 px-4">
                     <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold bg-[#FFF5EB] text-[#EC6317] border border-[#EC6317] shadow-sm">
                       {trabajador.contratacion}
                     </span>
                   </td>
-                  <td className="py-2.5 px-4 text-xs text-gray-600 uppercase max-w-[200px] leading-tight font-medium">
+                  <td className="py-1.5 px-4 text-xs text-gray-600 uppercase max-w-[200px] leading-tight font-medium">
                     {trabajador.puesto}
                   </td>
-                  <td className="py-2.5 px-4 text-xs text-gray-600 uppercase font-medium">{trabajador.locacion}</td>
-                  <td className="py-2.5 px-4 text-xs text-gray-600 uppercase font-medium">{trabajador.turno}</td>
-                  <td className="py-2.5 px-4 text-xs font-bold text-gray-900">{trabajador.horario}</td>
-                  <td className="py-2.5 px-4 text-xs text-gray-600 font-medium">{trabajador.descanso}</td>
-                  <td className="py-2.5 px-4">
+                  <td className="py-1.5 px-4 text-xs text-gray-600 uppercase font-medium">{trabajador.locacion}</td>
+                  <td className="py-1.5 px-4 text-xs text-gray-600 uppercase font-medium">{trabajador.turno}</td>
+                  <td className="py-1.5 px-4 text-xs font-bold text-gray-900">{trabajador.horario}</td>
+                  <td className="py-1.5 px-4 text-xs text-gray-600 font-medium">{trabajador.descanso}</td>
+                  <td className="py-1.5 px-4">
                     <img 
                       src={getEstadoIcon(trabajador.estado)} 
                       alt={trabajador.estado} 
