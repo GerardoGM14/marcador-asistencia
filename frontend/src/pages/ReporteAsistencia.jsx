@@ -176,7 +176,7 @@ const ReporteAsistencia = () => {
 
       {/* Content Area - Single Card */}
       <div className="flex-1 px-4 pb-4 min-h-0 w-full">
-        <div className="bg-white rounded-xl shadow-sm flex flex-col h-full overflow-hidden p-5">
+        <div className="bg-white rounded-xl shadow-sm flex flex-col max-h-full overflow-hidden p-5">
           
           {/* Top Controls Row */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
@@ -209,18 +209,18 @@ const ReporteAsistencia = () => {
           </div>
 
           {/* Scrollable Table Section */}
-          <div className="flex-1 overflow-auto border border-gray-200 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+          <div className="overflow-auto border border-gray-200 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             <table className="w-full text-left min-w-[1400px] border border-gray-200">
               <thead className="bg-[#F3F4F6] sticky top-0 z-10">
                 {/* Header Titles */}
                 <tr>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-16 border-none rounded-tl-lg">#</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Fecha</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[280px] border-none">Trabajador</th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[220px] border-none">Trabajador</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-48 border-none">Locación</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-48 border-none">Jornada</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Horas Trabajadas</th>
-                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Horas Tardanza</th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Hrs.Trabajadas</th>
+                  <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Hrs.Tardanzas</th>
                   <th className="pt-2 pb-1 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none rounded-tr-lg">Estado</th>
                 </tr>
                 {/* Filter Row */}
@@ -311,16 +311,16 @@ const ReporteAsistencia = () => {
               <tbody className="divide-y divide-gray-100">
                 {currentRows.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-200 transition-colors bg-white even:bg-gray-100 border-b border-gray-100 last:border-none">
-                    <td className="py-3 px-4 text-sm text-gray-600 text-center">{item.id}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{item.fecha}</td>
-                    <td className="py-3 px-4">
+                    <td className="py-1.5 px-4 text-sm text-gray-600 text-center">{item.id}</td>
+                    <td className="py-1.5 px-4 text-sm text-gray-600">{item.fecha}</td>
+                    <td className="py-1.5 px-4">
                       <div className="flex flex-col">
                         <span className="font-bold text-gray-900 text-sm uppercase leading-tight">{item.nombres}</span>
                         <span className="text-xs text-gray-500 font-medium leading-none">DNI: {item.dni}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-xs text-gray-600 uppercase font-medium">{item.locacion}</td>
-                    <td className="py-3 px-4">
+                    <td className="py-1.5 px-4 text-xs text-gray-600 uppercase font-medium">{item.locacion}</td>
+                    <td className="py-1.5 px-4">
                        <div className="flex flex-col">
                          <span className="text-xs font-bold text-gray-900">
                            {item.jornadaHora} {item.jornadaEstado && `– ${item.jornadaEstado}`}
@@ -328,9 +328,9 @@ const ReporteAsistencia = () => {
                          <span className="text-[10px] text-gray-500 uppercase">{item.jornadaTurno}</span>
                        </div>
                     </td>
-                    <td className="py-3 px-4 text-sm font-bold text-green-600">{item.online}</td>
-                    <td className="py-3 px-4 text-sm font-bold text-[#EC6317]">{item.offline}</td>
-                    <td className="py-3 px-4">
+                    <td className="py-1.5 px-4 text-sm font-bold text-green-600">{item.online}</td>
+                    <td className="py-1.5 px-4 text-sm font-bold text-[#EC6317]">{item.offline}</td>
+                    <td className="py-1.5 px-4">
                       {getEstadoBadge(item.estado)}
                     </td>
                   </tr>

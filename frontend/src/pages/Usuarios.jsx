@@ -138,10 +138,10 @@ const Usuarios = () => {
 
       {/* Content Area - Single Card */}
       <div className="flex-1 px-4 pb-4 min-h-0 w-full">
-        <div className="bg-white rounded-xl shadow-sm flex flex-col h-full overflow-hidden p-5">
+        <div className="bg-white rounded-xl shadow-sm flex flex-col max-h-full overflow-hidden p-5">
           
           {/* Scrollable Table Section */}
-          <div className="flex-1 overflow-auto border border-gray-200 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+          <div className="overflow-auto border border-gray-200 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             <table className="w-full text-left min-w-[1000px] border border-gray-200">
               <thead className="bg-[#F3F4F6] sticky top-0 z-10">
                 {/* Header Titles */}
@@ -224,11 +224,20 @@ const Usuarios = () => {
                   <tr key={usuario.id} className="hover:bg-gray-200 transition-colors bg-white even:bg-gray-100 border-b border-gray-100 last:border-none">
                     <td className="py-1.5 px-4 text-sm text-gray-600 text-center">{usuario.id}</td>
                     <td className="py-1.5 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={`https://api.dicebear.com/9.x/notionists/svg?seed=${usuario.nombres}`} 
+                          alt="avatar" 
+                          className="w-8 h-8 rounded-full bg-gray-100"
+                        />
+                      </div>
                       <div className="flex flex-col">
                         <span className="font-bold text-gray-900 text-sm uppercase leading-tight">{usuario.nombres}</span>
                         <span className="text-xs text-gray-500 font-medium leading-none">{usuario.email}</span>
                       </div>
-                    </td>
+                    </div>
+                  </td>
                     <td className="py-1.5 px-4">
                       {(() => {
                         const Icon = getGrupoIcon(usuario.grupo);

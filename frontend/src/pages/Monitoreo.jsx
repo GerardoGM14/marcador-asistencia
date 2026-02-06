@@ -18,6 +18,7 @@ import estadoActivo from '../assets/state/estado_activo.svg';
 import estadoInactivo from '../assets/state/estado_inactivo.svg';
 import { usersData } from '../data/usersData';
 import monitorScreen from '../assets/monitor_screen.png';
+import MonitorDetailModal from '../components/monitoreo/MonitorDetailModal';
 
 // =========================================================================================
 // INSTRUCCIONES PARA AGREGAR CAPTURAS REALES:
@@ -37,6 +38,8 @@ const Monitoreo = () => {
   const [pantallas, setPantallas] = useState('12');
   const [equipo, setEquipo] = useState('TODOS');
   const [usuario, setUsuario] = useState('TODOS');
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Use shared mock data (placeholder content from Usuarios)
   const allUsuarios = usersData;
@@ -124,6 +127,34 @@ const Monitoreo = () => {
     return { website, desktopId, recordTime, isRecording, imageStyle, isUnproductive, screenImage };
   };
 
+  const handleCardClick = (usuario) => {
+    const monitorData = getMonitorData(usuario.id);
+    setSelectedUser({ ...usuario, ...monitorData });
+    setIsModalOpen(true);
+  };
+
+  const handleNextUser = () => {
+    if (!selectedUser) return;
+    const currentIndex = currentItems.findIndex(u => u.id === selectedUser.id);
+    if (currentIndex !== -1 && currentIndex < currentItems.length - 1) {
+      const nextUser = currentItems[currentIndex + 1];
+      handleCardClick(nextUser);
+    }
+  };
+
+  const handlePrevUser = () => {
+    if (!selectedUser) return;
+    const currentIndex = currentItems.findIndex(u => u.id === selectedUser.id);
+    if (currentIndex > 0) {
+      const prevUser = currentItems[currentIndex - 1];
+      handleCardClick(prevUser);
+    }
+  };
+
+  const selectedUserIndex = selectedUser ? currentItems.findIndex(u => u.id === selectedUser.id) : -1;
+  const hasNext = selectedUserIndex !== -1 && selectedUserIndex < currentItems.length - 1;
+  const hasPrev = selectedUserIndex > 0;
+
   // Helper to get grid cols class based on items per page
   const getGridClass = () => {
     switch(pantallas) {
@@ -149,22 +180,22 @@ const Monitoreo = () => {
         </div>
 
         {/* Title and Actions */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 uppercase">MONITOREO EN VIVO</h1>
           </div>
           
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
             {/* Cant. de pantallas */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Cant. de pantallas:</span>
+            <div className="flex items-center gap-2 flex-grow sm:flex-grow-0">
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Cant. de pantallas:</span>
               <select 
                 value={pantallas}
                 onChange={(e) => {
                   setPantallas(e.target.value);
                   setCurrentPage(1); // Reset to first page on change
                 }}
-                className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] bg-white text-gray-700 min-w-[60px]"
+                className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] bg-white text-gray-700 w-full sm:min-w-[60px]"
               >
                 <option value="4">4</option>
                 <option value="8">8</option>
@@ -174,12 +205,12 @@ const Monitoreo = () => {
             </div>
 
             {/* Equipos */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-grow sm:flex-grow-0">
               <span className="text-sm font-medium text-gray-700">Equipos</span>
               <select 
                 value={equipo}
                 onChange={(e) => setEquipo(e.target.value)}
-                className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] bg-white text-gray-700 min-w-[120px]"
+                className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] bg-white text-gray-700 w-full sm:min-w-[120px]"
               >
                 <option value="TODOS">TODOS</option>
                 {/* Add more options as needed */}
@@ -187,12 +218,12 @@ const Monitoreo = () => {
             </div>
 
             {/* Usuarios */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-grow sm:flex-grow-0">
               <span className="text-sm font-medium text-gray-700">Usuarios</span>
               <select 
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
-                className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] bg-white text-gray-700 min-w-[120px]"
+                className="h-9 px-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#EC6317] bg-white text-gray-700 w-full sm:min-w-[120px]"
               >
                 <option value="TODOS">TODOS</option>
                 {/* Add more options as needed */}
@@ -201,7 +232,7 @@ const Monitoreo = () => {
 
             {/* Restaurar Button */}
             <button 
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm h-9"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm h-9 w-full sm:w-auto"
               onClick={() => {
                 setPantallas('12');
                 setEquipo('TODOS');
@@ -222,9 +253,13 @@ const Monitoreo = () => {
           {currentItems.map((usuario) => {
             const { website, desktopId, recordTime, isRecording, imageStyle, isUnproductive, screenImage } = getMonitorData(usuario.id);
             return (
-              <div key={usuario.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+              <div 
+                key={usuario.id} 
+                className="bg-white rounded-xl border border-[#D9D9D9] p-2.5 flex flex-col cursor-pointer"
+                onClick={() => handleCardClick(usuario)}
+              >
                 {/* Screen Preview */}
-                <div className="relative h-24 bg-gray-100 border-b border-gray-100 group overflow-hidden">
+                <div className="relative h-24 bg-gray-100 rounded-lg group overflow-hidden">
                   <img 
                     src={screenImage} 
                     alt="Screen Preview" 
@@ -242,9 +277,9 @@ const Monitoreo = () => {
                 </div>
 
                 {/* Card Body */}
-                <div className="p-3 flex-1 flex flex-col justify-between">
+                <div className="pt-3 px-1 flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-start justify-between mb-1">
+                    <div className="flex items-center justify-between mb-1 h-5">
                       <h3 className="text-gray-500 font-bold text-[10px] uppercase tracking-wider">{usuario.grupo || 'GRUPO 01'}</h3>
                       
                       {/* Recording Action Button vs Default Icon */}
@@ -329,6 +364,16 @@ const Monitoreo = () => {
           </button>
         </div>
       </div>
+
+      <MonitorDetailModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        user={selectedUser} 
+        onNext={handleNextUser}
+        onPrev={handlePrevUser}
+        hasNext={hasNext}
+        hasPrev={hasPrev}
+      />
     </div>
   );
 };

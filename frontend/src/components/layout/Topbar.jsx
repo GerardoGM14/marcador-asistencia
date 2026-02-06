@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
 import { Building2, MapPin, Search, Bell, ChevronDown, User, Settings, Lock, HelpCircle, LogOut, Menu } from 'lucide-react';
 import ConfirmationModal from '../common/ConfirmationModal';
+import { authChannel } from '../../utils/authChannel';
 
 // Importamos la imagen local que subiste
 import logoutIllustration from '../../assets/modal/icono_logout.svg';
@@ -32,6 +33,9 @@ const Topbar = ({ onMenuClick }) => {
   const confirmLogout = () => {
     // Activar loader
     showLoader();
+    
+    // Notificar a otras pestañas
+    authChannel.postMessage({ type: 'LOGOUT' });
 
     // Simular pequeño delay antes de salir
     setTimeout(() => {

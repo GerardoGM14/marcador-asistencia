@@ -22,7 +22,8 @@ import {
   Activity,
   HeartPulse,
   BarChart3,
-  Monitor
+  Monitor,
+  AppWindow
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import logoFastCloud from '../../assets/logo-fastcloud-dark.png';
@@ -165,6 +166,10 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 <Link to="/gestion/subsidiados" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/subsidiados' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
                   <HeartPulse className="w-3.5 h-3.5" />
                   <span>Subsidiados</span>
+                </Link>
+                <Link to="/gestion/apps-sitios" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/apps-sitios' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                  <AppWindow className="w-3.5 h-3.5" />
+                  <span>Apps y Sitios</span>
                 </Link>
                 <Link to="/gestion/reporte-asistencia" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/reporte-asistencia' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
                   <List className="w-3.5 h-3.5" />

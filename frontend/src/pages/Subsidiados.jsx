@@ -141,7 +141,7 @@ const Subsidiados = () => {
 
       {/* Content Area - Single Card */}
       <div className="flex-1 px-4 pb-4 min-h-0 w-full">
-        <div className="bg-white rounded-xl shadow-sm flex flex-col h-full overflow-hidden p-5">
+        <div className="bg-white rounded-xl shadow-sm flex flex-col max-h-full overflow-hidden p-5">
           
           {/* Filters and Period Row */}
           <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-3 mb-4">
@@ -161,17 +161,17 @@ const Subsidiados = () => {
           </div>
 
           {/* Scrollable Table Section */}
-          <div className="flex-1 overflow-auto border border-gray-200 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+          <div className="overflow-auto border border-gray-200 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             <table className="w-full text-left min-w-[1400px] border border-gray-200">
               <thead className="bg-[#F3F4F6] sticky top-0 z-10">
                 {/* Header Titles */}
                 <tr>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-16 border-none rounded-tl-lg">#</th>
-                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[280px] border-none">Trabajador</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[340px] border-none">Trabajador</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Puesto</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Sede</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-24 border-none">Turno</th>
-                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-56 border-none">Tipo Subsidio</th>
+                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-40 border-none">Tipo Subsidio</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-64 border-none">Tipo Suspensión</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Desde</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-32 border-none">Hasta</th>
@@ -265,11 +265,20 @@ const Subsidiados = () => {
                   <tr key={row.id} className="hover:bg-gray-200 transition-colors bg-white even:bg-gray-100 border-b border-gray-100 last:border-none">
                     <td className="py-1.5 px-4 text-sm text-gray-600 text-center">{row.id}</td>
                     <td className="py-1.5 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
+                        <img 
+                          src={`https://api.dicebear.com/9.x/notionists/svg?seed=${row.nombres}`} 
+                          alt="avatar" 
+                          className="w-8 h-8 rounded-full bg-gray-100"
+                        />
+                      </div>
                       <div className="flex flex-col">
                         <span className="font-bold text-gray-900 text-sm uppercase leading-tight">{row.nombres}</span>
                         <span className="text-xs text-gray-500 font-medium leading-none">DNI: {row.dni}</span>
                       </div>
-                    </td>
+                    </div>
+                  </td>
                     <td className="py-1.5 px-4 text-xs text-gray-600 uppercase leading-tight font-medium">
                       {row.puesto}
                     </td>
