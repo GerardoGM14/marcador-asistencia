@@ -18,6 +18,7 @@ import AppsSitios from './pages/AppsSitios'
 import ReporteAsistencia from './pages/ReporteAsistencia'
 import Productividad from './pages/Productividad'
 import Usuarios from './pages/Usuarios'
+import Clasificacion from './pages/Clasificacion'
 import Monitoreo from './pages/Monitoreo'
 
 function App() {
@@ -83,6 +84,7 @@ function App() {
           <Route path="/gestion/reporte-asistencia" element={<ReporteAsistencia />} />
           <Route path="/gestion/productividad" element={<Productividad />} />
           <Route path="/gestion/usuarios" element={<Usuarios />} />
+          <Route path="/gestion/clasificacion" element={<Clasificacion />} />
           <Route path="/gestion/monitoreo" element={<Monitoreo />} />
           <Route path="/dashboard/lista-clientes" element={<ListaClientes />} />
           <Route path="/dashboard/monitor" element={<MonitorTiempoReal />} />

@@ -13,6 +13,7 @@ import {
 import NuevaAppSitioModal from '../components/apps_sitios/NuevaAppSitioModal';
 import { workersData } from '../data/workersData';
 import { suspensionTypes } from '../data/suspensionTypes';
+import { appsSitesCategories } from '../data/appsSitesData';
 import estadoActivo from '../assets/state/estado_activo.svg';
 import estadoBaja from '../assets/state/estado_baja.svg';
 
@@ -28,29 +29,7 @@ const AppsSitios = () => {
   });
   
   // Mock data - Static 3 categories including REDES SOCIALES
-  const allCategories = [
-    {
-      id: 1,
-      nombre: 'REDES SOCIALES',
-      webSites: 5,
-      apps: 3,
-      estado: 'ACTIVO'
-    },
-    {
-      id: 2,
-      nombre: 'PRODUCTIVIDAD',
-      webSites: 8,
-      apps: 4,
-      estado: 'ACTIVO'
-    },
-    {
-      id: 3,
-      nombre: 'ENTRETENIMIENTO',
-      webSites: 2,
-      apps: 1,
-      estado: 'INACTIVO'
-    }
-  ];
+  const allCategories = appsSitesCategories;
 
   const filteredCategories = allCategories.filter(t => {
     const matchesNombre = t.nombre.toLowerCase().includes(filters.nombre.toLowerCase());

@@ -183,6 +183,10 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                   <Users className="w-3.5 h-3.5" />
                   <span>Usuarios</span>
                 </Link>
+                <Link to="/gestion/clasificacion" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/clasificacion' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Clasificación</span>
+                </Link>
                 <Link to="/gestion/monitoreo" className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors text-sm ${location.pathname === '/gestion/monitoreo' ? 'bg-[#EC6317] text-white font-medium' : 'text-gray-400 hover:text-white hover:bg-gray-800'}`}>
                   <Monitor className="w-3.5 h-3.5" />
                   <span>Monitoreo</span>
