@@ -258,7 +258,7 @@ const Clasificacion = () => {
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none rounded-tl-lg text-center">#</th>
                   <th className={`py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'min-w-[200px]' : 'min-w-[300px]'}`}>Nombre / URL</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none text-center">Tipo</th>
-                  <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'w-40' : 'w-64'}`}>Categoría</th>
+                  <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'w-64' : 'w-64'}`}>Categoría</th>
                   
                   {filters.grupo !== 'TODOS' ? (
                     <>
@@ -269,7 +269,7 @@ const Clasificacion = () => {
                     <th className="py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none w-80">Acción</th>
                   )}
 
-                  <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'w-72' : ''}`}>
+                  <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'w-48' : ''}`}>
                     {filters.grupo !== 'TODOS' ? `Duración: ${filters.grupo}` : 'Duración'}
                   </th>
                   <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none rounded-tr-lg ${filters.grupo !== 'TODOS' ? 'w-24' : ''}`}>Configuración</th>
