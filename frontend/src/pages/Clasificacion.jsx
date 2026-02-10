@@ -3,6 +3,7 @@ import {
   Search, 
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Download,
   Settings,
   Globe, 
@@ -113,8 +114,20 @@ const Clasificacion = () => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = filteredData.slice(indexOfFirstRow, indexOfLastRow);
 
-  const pendingCount = data.filter(i => i.status === 'pending').length;
-  const reviewedCount = data.filter(i => i.status === 'reviewed').length;
+  const { pending: pendingCount, reviewed: reviewedCount } = data.reduce((acc, item) => {
+    const matchesFilters = 
+      (!filters.id || item.id.toString().includes(filters.id)) &&
+      (!filters.nombre || item.name.toLowerCase().includes(filters.nombre.toLowerCase())) &&
+      (filters.tipo === 'TODOS' || item.type === filters.tipo) &&
+      (filters.categoria === 'TODOS' || item.category === filters.categoria) &&
+      (filters.grupo === 'TODOS' || item.group === filters.grupo);
+
+    if (matchesFilters) {
+      if (item.status === 'pending') acc.pending++;
+      if (item.status === 'reviewed') acc.reviewed++;
+    }
+    return acc;
+  }, { pending: 0, reviewed: 0 });
 
   const handleExport = (type) => {
     if (type === 'excel') {
@@ -243,9 +256,9 @@ const Clasificacion = () => {
                 {/* Header Titles */}
                 <tr>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider w-20 border-none rounded-tl-lg text-center">#</th>
-                  <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider min-w-[300px] border-none">Nombre / URL</th>
+                  <th className={`py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'min-w-[200px]' : 'min-w-[300px]'}`}>Nombre / URL</th>
                   <th className="py-1.5 px-4 text-sm font-bold text-gray-600 tracking-wider border-none text-center">Tipo</th>
-                  <th className="py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none w-64">Categoría</th>
+                  <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'w-40' : 'w-64'}`}>Categoría</th>
                   
                   {filters.grupo !== 'TODOS' ? (
                     <>
@@ -256,10 +269,10 @@ const Clasificacion = () => {
                     <th className="py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none w-80">Acción</th>
                   )}
 
-                  <th className="py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none">
+                  <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none ${filters.grupo !== 'TODOS' ? 'w-72' : ''}`}>
                     {filters.grupo !== 'TODOS' ? `Duración: ${filters.grupo}` : 'Duración'}
                   </th>
-                  <th className="py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none rounded-tr-lg">Configuración</th>
+                  <th className={`py-1.5 px-4 text-center text-sm font-bold text-gray-600 tracking-wider border-none rounded-tr-lg ${filters.grupo !== 'TODOS' ? 'w-24' : ''}`}>Configuración</th>
                 </tr>
                 
                 {/* Filter Row */}
@@ -355,19 +368,24 @@ const Clasificacion = () => {
                     <td className="py-2 px-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         {item.status === 'reviewed' ? (
-                          <button className={`px-2 py-1 text-[13px] font-semibold border rounded-lg uppercase tracking-wide cursor-default ${
+                          <button className={`pl-3 pr-4 py-1 text-[13px] font-semibold border rounded-full uppercase tracking-wide cursor-default flex items-center gap-2 ${
                             item.productivity === 'PRODUCTIVO'
                               ? 'text-emerald-600 border-[#8AE2AC] bg-[#EAFAEF]'
                               : 'text-[#EC6317] border-[#FDBD9B] bg-[#FFF5EF]'
                           }`}>
+                            <div className={`w-2 h-2 rounded-full ${
+                              item.productivity === 'PRODUCTIVO' ? 'bg-emerald-600' : 'bg-[#EC6317]'
+                            }`} />
                             {item.productivity === 'PRODUCTIVO' ? 'Productivo' : 'Improductivo'}
                           </button>
                         ) : (
                           <>
-                            <button className="px-2 py-1 text-[13px] font-semibold text-emerald-600 border border-[#8AE2AC] bg-[#EAFAEF] rounded-lg uppercase tracking-wide hover:opacity-80 transition-opacity cursor-pointer">
+                            <button className="pl-3 pr-4 py-1 text-[13px] font-semibold text-emerald-600 border border-[#8AE2AC] bg-[#EAFAEF] rounded-full uppercase tracking-wide hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-emerald-600" />
                               Productivo
                             </button>
-                            <button className="px-2 py-1 text-[13px] font-semibold text-[#EC6317] border border-[#FDBD9B] bg-[#FFF5EF] rounded-lg uppercase tracking-wide hover:opacity-80 transition-opacity cursor-pointer">
+                            <button className="pl-3 pr-4 py-1 text-[13px] font-semibold text-[#EC6317] border border-[#FDBD9B] bg-[#FFF5EF] rounded-full uppercase tracking-wide hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-[#EC6317]" />
                               Improductivo
                             </button>
                           </>
@@ -377,15 +395,30 @@ const Clasificacion = () => {
 
                     {filters.grupo !== 'TODOS' && (
                       <td className="py-2 px-4 text-center">
-                        <select 
-                          className="w-full appearance-none bg-white border border-gray-300 text-gray-600 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#EC6317] cursor-pointer"
-                          value={item.groupProductivity || ""}
-                          onChange={(e) => handleGroupProductivityChange(item.id, e.target.value)}
-                        >
-                          <option value="" disabled hidden></option>
-                          <option value="PRODUCTIVO">Productivo</option>
-                          <option value="IMPRODUCTIVO">Improductivo</option>
-                        </select>
+                        <div className="relative inline-block">
+                          <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full pointer-events-none ${
+                            (item.groupProductivity || item.productivity || 'PRODUCTIVO') === 'PRODUCTIVO'
+                              ? 'bg-emerald-600'
+                              : 'bg-[#EC6317]'
+                          }`} />
+                          <select 
+                            className={`appearance-none pl-8 pr-8 py-1 text-[13px] font-semibold border rounded-full uppercase tracking-wide cursor-pointer focus:outline-none ${
+                              (item.groupProductivity || item.productivity || 'PRODUCTIVO') === 'PRODUCTIVO'
+                                ? 'text-emerald-600 border-[#8AE2AC] bg-[#EAFAEF]'
+                                : 'text-[#EC6317] border-[#FDBD9B] bg-[#FFF5EF]'
+                            }`}
+                            value={item.groupProductivity || item.productivity || 'PRODUCTIVO'}
+                            onChange={(e) => handleGroupProductivityChange(item.id, e.target.value)}
+                          >
+                            <option value="PRODUCTIVO" className="bg-white text-gray-900">Productivo</option>
+                            <option value="IMPRODUCTIVO" className="bg-white text-gray-900">Improductivo</option>
+                          </select>
+                          <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none ${
+                            (item.groupProductivity || item.productivity || 'PRODUCTIVO') === 'PRODUCTIVO'
+                              ? 'text-emerald-600'
+                              : 'text-[#EC6317]'
+                          }`} />
+                        </div>
                       </td>
                     )}
                     <td className="py-2 px-4 text-center">

@@ -148,10 +148,10 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           <div className="mb-1">
             <button 
               onClick={() => toggleSubmenu('gestion')}
-              className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-[#2D3748] text-gray-400 hover:text-gray-200 transition-colors mb-0.5"
+              className="w-full flex items-center justify-between p-2 rounded-lg transition-colors mb-0.5 hover:bg-[#2D3748] text-gray-400 hover:text-gray-200"
             >
               <div className="flex items-center gap-2">
-                <BriefcaseBusiness className="w-4 h-4" />
+                <BriefcaseBusiness className={`w-4 h-4 ${location.pathname.startsWith('/gestion') ? 'text-[#EC6317]' : ''}`} />
                 <span className="font-medium text-sm">Gestión</span>
               </div>
               {openSubmenus.gestion ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
