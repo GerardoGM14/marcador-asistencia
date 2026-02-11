@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useLayoutEffect } from 'react';
+import { useSocket } from '../../context/SocketContext';
 import { 
   X, 
   ChevronLeft,
@@ -12,6 +13,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import hangoutVideoIcon from '../../assets/modal/hangout_video.svg';
 
 const MonitorDetailModal = ({ isOpen, onClose, user, onNext, onPrev, hasNext, hasPrev }) => {
+  const socket = useSocket();
+  const [streamImage, setStreamImage] = useState(null);
   const [showAllRecordings, setShowAllRecordings] = useState(false);
   const mainModalRef = useRef(null);
   const [secondaryMaxHeight, setSecondaryMaxHeight] = useState(undefined);
@@ -53,6 +56,36 @@ const MonitorDetailModal = ({ isOpen, onClose, user, onNext, onPrev, hasNext, ha
       setShowAllRecordings(false);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    // CONDICIÓN TEMPORAL PARA PRUEBAS:
+    // Solo activar el socket si el usuario es "ALVARADO LOPEZ, JUAN CARLOS"
+    const TARGET_USER = "ALVARADO LOPEZ, JUAN CARLOS";
+    
+    if (!socket || !isOpen || !user || user.nombres !== TARGET_USER) return;
+
+    console.log(`Iniciando transmisión para usuario objetivo: ${user.nombres}`);
+    socket.emit('monitor:start_stream', { userId: user.id });
+
+    // Listen for stream frames (Compatibility with both event names)
+    const handleStreamFrame = (data) => {
+      // Support for new format { frame: "base64..." } and old formats
+      const imageSrc = data.frame || data.image || data; 
+      setStreamImage(imageSrc);
+    };
+
+    socket.on('monitor:start_frame', handleStreamFrame);
+    socket.on('monitor:frame', handleStreamFrame);
+
+    return () => {
+      // Cleanup: stop stream and remove listener
+      console.log(`Deteniendo transmisión para: ${user.nombres}`);
+      socket.emit('monitor:stop_stream', { userId: user.id });
+      socket.off('monitor:start_frame', handleStreamFrame);
+      socket.off('monitor:frame', handleStreamFrame);
+      setStreamImage(null);
+    };
+  }, [socket, isOpen, user]);
 
   // Prevent scroll when modal is open
   useEffect(() => {
@@ -164,10 +197,10 @@ const MonitorDetailModal = ({ isOpen, onClose, user, onNext, onPrev, hasNext, ha
                     </div>
 
                     <img 
-                      src={user.screenImage} 
+                      src={streamImage && typeof streamImage === 'string' ? (streamImage.startsWith('data:') ? streamImage : `data:image/jpeg;base64,${streamImage}`) : user.screenImage} 
                       alt="Screen Live View" 
                       className="w-full h-full object-cover"
-                      style={user.imageStyle}
+                      style={streamImage ? {} : user.imageStyle}
                     />
                     
                     {/* Unproductive Overlay */}

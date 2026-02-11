@@ -1,49 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSocket } from '../context/SocketContext';
 import { 
   ChevronRight,
   RotateCcw,
-  Search,
   ChevronLeft,
-  Cpu,
-  Building2,
-  TrendingUp,
-  Settings,
-  HeartPulse,
-  GraduationCap,
   Monitor,
   Globe,
   Video
 } from 'lucide-react';
-import estadoActivo from '../assets/state/estado_activo.svg';
-import estadoInactivo from '../assets/state/estado_inactivo.svg';
 import { usersData } from '../data/usersData';
 import monitorScreen from '../assets/monitor_screen.png';
 import MonitorDetailModal from '../components/monitoreo/MonitorDetailModal';
 
-// =========================================================================================
-// INSTRUCCIONES PARA AGREGAR CAPTURAS REALES:
-// 1. Guarda tus capturas de pantalla en la carpeta 'src/assets/screens/'
-//    (ejemplo: 'youtube.png', 'facebook.png')
-// 2. Importa las imágenes descomentando y ajustando las líneas de abajo:
-//
-// import youtubeImg from '../assets/screens/youtube.png';
-// import facebookImg from '../assets/screens/facebook.png';
-// ...
-//
-// 3. Agrega las imágenes al objeto 'siteImages' dentro de getMonitorData
-// =========================================================================================
-
 const Monitoreo = () => {
+  const socket = useSocket();
   const [currentPage, setCurrentPage] = useState(1);
   const [pantallas, setPantallas] = useState('12');
   const [equipo, setEquipo] = useState('TODOS');
   const [usuario, setUsuario] = useState('TODOS');
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Estado para la imagen en vivo del usuario de prueba
+  const [liveStreamImage, setLiveStreamImage] = useState(null);
 
   // Use shared mock data (placeholder content from Usuarios)
   const allUsuarios = usersData;
   const filteredUsuarios = allUsuarios; 
+
+  // TEST: Escuchar stream para usuario específico en la vista general (Modo Pasivo)
+  useEffect(() => {
+    if (!socket) return;
+
+    const TARGET_NAME = "ALVARADO LOPEZ, JUAN CARLOS";
+    const targetUser = allUsuarios.find(u => u.nombres === TARGET_NAME);
+
+    if (targetUser) {
+      // TRIGGER: Emitimos 'monitor:start_frame' para que el cliente sepa que estamos listos para recibir
+      console.log(`🚀 (Auto) Emitiendo trigger monitor:start_frame para: ${TARGET_NAME}`);
+      socket.emit('monitor:start_frame', { userId: targetUser.id });
+
+      let frameCount = 0;
+      const handleFrame = (data) => {
+        // Log solo del primer frame
+        if (frameCount === 0) {
+            console.log('📺 VISTA GENERAL: Primer frame recibido (monitor:frame)', { 
+                user: TARGET_NAME,
+                hasFrameProp: !!data?.frame,
+                dataType: typeof data
+            });
+        }
+        frameCount++;
+        
+        // Soporte para data.frame (nuevo formato) o data directa (viejo formato)
+        const imageSrc = data.frame || data.image || data;
+        setLiveStreamImage(imageSrc);
+      };
+
+      // Escuchamos AMBOS eventos por compatibilidad:
+      // 'monitor:start_frame' (anterior)
+      // 'monitor:frame' (nuevo estándar solicitado)
+      socket.on('monitor:start_frame', handleFrame);
+      socket.on('monitor:frame', handleFrame);
+
+      return () => {
+        socket.off('monitor:start_frame', handleFrame);
+        socket.off('monitor:frame', handleFrame);
+      };
+    }
+  }, [socket, allUsuarios]); 
 
   // Pagination Logic based on grid size (pantallas)
   const itemsPerPage = parseInt(pantallas);
@@ -251,7 +276,28 @@ const Monitoreo = () => {
       <div className="flex-1 px-4 pb-4 min-h-0 w-full overflow-y-auto custom-scrollbar">
         <div className={`grid ${getGridClass()} gap-4 pb-4`}>
           {currentItems.map((usuario) => {
-            const { website, desktopId, recordTime, isRecording, imageStyle, isUnproductive, screenImage } = getMonitorData(usuario.id);
+            const { website, desktopId, recordTime, isRecording, imageStyle, isUnproductive, screenImage: defaultScreenImage } = getMonitorData(usuario.id);
+            
+            // Usar imagen en vivo si es el usuario objetivo y tenemos señal
+            const isTargetUser = usuario.nombres === "ALVARADO LOPEZ, JUAN CARLOS";
+            const rawImage = (isTargetUser && liveStreamImage) ? liveStreamImage : null;
+            
+            // Procesar la imagen para asegurar que tenga el formato correcto data:image
+            let finalScreenImage = defaultScreenImage;
+            
+            // Verificar que rawImage exista y sea un string antes de procesar
+            if (rawImage && typeof rawImage === 'string') {
+              finalScreenImage = rawImage.startsWith('data:') 
+                ? rawImage 
+                : `data:image/jpeg;base64,${rawImage}`;
+            } else if (rawImage) {
+               // Fallback silencioso si llega un objeto inesperado (evita crash)
+               console.warn('Formato de imagen no reconocido:', typeof rawImage);
+            }
+
+            // Quitar estilos si es video en vivo
+            const finalImageStyle = (isTargetUser && liveStreamImage) ? {} : imageStyle;
+
             return (
               <div 
                 key={usuario.id} 
@@ -261,10 +307,10 @@ const Monitoreo = () => {
                 {/* Screen Preview */}
                 <div className="relative h-24 bg-gray-100 rounded-lg group overflow-hidden">
                   <img 
-                    src={screenImage} 
+                    src={finalScreenImage} 
                     alt="Screen Preview" 
                     className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
-                    style={imageStyle}
+                    style={finalImageStyle}
                   />
                   
                   {/* Recording Badge */}

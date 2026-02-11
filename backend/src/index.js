@@ -11,6 +11,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const server = http.createServer(app);
 const io = new Server(server, {
+    maxHttpBufferSize: 1e8, // 100 MB para permitir imágenes grandes
     cors: {
         origin: "*", // Permitir conexiones desde cualquier origen (ajustar en producción)
         methods: ["GET", "POST"]
@@ -125,7 +126,23 @@ app.post('/api/auth/login', async (req, res) => {
     return res.status(401).json({ message: 'Credenciales inválidas' });
 });
 
+const os = require('os');
+
+function getLocalIpAddress() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      // Skip internal (i.e. 127.0.0.1) and non-ipv4 addresses
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
+
 server.listen(PORT, '0.0.0.0', () => {
+    const localIp = getLocalIpAddress();
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
-    console.log(`Accesible en red: http://192.168.0.74:${PORT}`);
+    console.log(`Accesible en red: http://${localIp}:${PORT}`);
 });

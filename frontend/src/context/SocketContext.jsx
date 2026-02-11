@@ -11,8 +11,11 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Conectar al backend (ajusta la URL si es necesario)
-    const newSocket = io('http://192.168.0.74:3000');
+    // Detectar la URL del backend dinámicamente basándose en la ubicación actual
+    const socketUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
+    console.log('Intentando conectar Socket.io a:', socketUrl);
+
+    const newSocket = io(socketUrl);
     setSocket(newSocket);
 
     // Listeners globales para depuración
