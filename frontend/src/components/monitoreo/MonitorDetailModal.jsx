@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef, useLayoutEffect } from 'react';
 import { useSocket } from '../../context/SocketContext';
+import io from 'socket.io-client';
 import { 
   X, 
   ChevronLeft,
@@ -7,7 +8,9 @@ import {
   Video, 
   Camera,
   Monitor,
-  Globe
+  Globe,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import hangoutVideoIcon from '../../assets/modal/hangout_video.svg';
@@ -57,33 +60,189 @@ const MonitorDetailModal = ({ isOpen, onClose, user, onNext, onPrev, hasNext, ha
     }
   }, [isOpen]);
 
+  // WebRTC Logic
+  const videoRef = useRef(null);
+  const peerConnectionRef = useRef(null);
+  const viewerSocketRef = useRef(null);
+  const [isWebRTCConnected, setIsWebRTCConnected] = useState(false);
+  const [webRTCStatus, setWebRTCStatus] = useState('idle'); // idle, connecting, connected, error
+  const [webRTCErrorMessage, setWebRTCErrorMessage] = useState('');
+
+  const connectWebRTC = async () => {
+      // Usar la IP del servidor proporcionada
+      const SERVER_IP = "192.168.0.60";
+      // Puertos basados en el snippet proporcionado (Socket: 7001, API: 7000)
+      const API_URL = `http://${SERVER_IP}:7000/api/viewer`;
+
+      try {
+        setWebRTCStatus('connecting');
+        setWebRTCErrorMessage('');
+        console.log('Iniciando WebRTC...');
+        
+        // Cerrar conexión previa si existe
+        if (peerConnectionRef.current) {
+            peerConnectionRef.current.close();
+        }
+
+        const pc = new RTCPeerConnection({
+           iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+        peerConnectionRef.current = pc;
+
+        pc.addTransceiver('video', { direction: 'recvonly' });
+
+        pc.ontrack = (event) => {
+          console.log('WebRTC track recibido');
+          if (videoRef.current) {
+            videoRef.current.srcObject = event.streams[0];
+            setIsWebRTCConnected(true);
+            setWebRTCStatus('connected');
+            
+            // Log adicional de reproducción
+            videoRef.current.onplaying = () => console.log("🟢 Video reproduciéndose");
+            videoRef.current.play().catch(e => console.error("Error al reproducir video:", e));
+          }
+        };
+        
+        // Manejo de estado de conexión ICE
+        pc.oniceconnectionstatechange = () => {
+            console.log('ICE State:', pc.iceConnectionState);
+            if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+                setIsWebRTCConnected(false);
+                setWebRTCStatus('error');
+                setWebRTCErrorMessage('Conexión interrumpida');
+            }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        console.log('Enviando oferta WebRTC al servidor...', { 
+            url: API_URL
+        });
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pc.localDescription),
+        });
+
+        // Manejo específico del 404 (Esperando broadcaster) como en el snippet
+        if (response.status === 404) {
+            console.log("⏳ Esperando broadcaster...");
+            setWebRTCStatus('connecting'); // Mantener estado conectando
+            // Reintentar en 2 segundos
+            setTimeout(connectWebRTC, 2000);
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: No se pudo conectar al servidor de video`);
+        }
+
+        const answer = await response.json();
+        // El snippet usa answer.data, ajustamos para soportar ambos formatos por si acaso
+        const sdpData = answer.data || answer;
+        
+        await pc.setRemoteDescription(new RTCSessionDescription(sdpData));
+        console.log('Conexión WebRTC establecida (negociación completa)');
+
+      } catch (error) {
+        console.error('Error al conectar WebRTC:', error);
+        setIsWebRTCConnected(false);
+        setWebRTCStatus('error');
+        // Mensaje más amigable para el usuario final
+        const userMessage = error.message.includes('Failed to fetch') 
+            ? 'No se pudo conectar al servidor de video (Fuera de línea)' 
+            : error.message || 'Error de conexión';
+        setWebRTCErrorMessage(userMessage);
+      }
+  };
+
   useEffect(() => {
     // CONDICIÓN TEMPORAL PARA PRUEBAS:
-    // Solo activar el socket si el usuario es "ALVARADO LOPEZ, JUAN CARLOS"
     const TARGET_USER = "ALVARADO LOPEZ, JUAN CARLOS";
     
-    if (!socket || !isOpen || !user || user.nombres !== TARGET_USER) return;
+    if (!isOpen || !user || user.nombres !== TARGET_USER) return;
 
-    console.log(`Iniciando transmisión para usuario objetivo: ${user.nombres}`);
-    socket.emit('monitor:start_stream', { userId: user.id });
+    // IP del servidor
+    const SERVER_IP = "192.168.0.60";
+    // Socket para señales (start_screen): Puerto 7001 (según snippet original)
+    const SOCKET_URL = `http://${SERVER_IP}:7001`;
+    // API para negociación WebRTC: Puerto 7000 (según confirmación de imagen)
+    const API_URL = `http://${SERVER_IP}:7000/api/viewer`;
 
-    // Listen for stream frames (Compatibility with both event names)
-    const handleStreamFrame = (data) => {
-      // Support for new format { frame: "base64..." } and old formats
-      const imageSrc = data.frame || data.image || data; 
-      setStreamImage(imageSrc);
-    };
+    console.log(`Iniciando conexión Viewer Socket para: ${user.nombres}`);
+    
+    // Conexión Socket dedicada para el Viewer (Puerto 7001)
+    // Se eliminó auth: { token: "nani" } a petición del usuario
+    const newViewerSocket = io(SOCKET_URL, {
+        transports: ['websocket', 'polling']
+    });
+    viewerSocketRef.current = newViewerSocket;
 
-    socket.on('monitor:start_frame', handleStreamFrame);
-    socket.on('monitor:frame', handleStreamFrame);
+    newViewerSocket.on('connect', () => {
+        console.log("✅ Viewer Socket conectado al puerto 7001");
+        setWebRTCStatus('connecting');
+        
+        // Emitir solicitud de pantalla
+        console.log("📡 Emitiendo start_screen");
+        newViewerSocket.emit("start_screen", { token: "nani" });
+    });
+
+    newViewerSocket.on('connect_error', (err) => {
+        console.error("❌ Error de conexión Socket (7001):", err.message);
+        // Mostrar error en UI para que el usuario pueda intentar conectar manualmente (Bypass socket)
+        setWebRTCStatus('error');
+        setWebRTCErrorMessage(`No se pudo conectar al Socket (7001). Intente reintentar manualmente.`);
+    });
+
+    newViewerSocket.on('screen_started', () => {
+        console.log("🟢 Broadcaster listo (screen_started recibido)");
+        connectWebRTC();
+    });
+
+    // Fallback listeners del socket principal (puerto 3000) para imágenes estáticas
+    // Esto se mantiene por si el WebRTC falla o no está disponible
+    if (socket) {
+        socket.emit('monitor:start_stream', { userId: user.id });
+        const handleStreamFrame = (data) => {
+            if (!isWebRTCConnected) { // Solo actualizar imagen si no hay WebRTC
+                const imageSrc = data.frame || data.image || data; 
+                setStreamImage(imageSrc);
+            }
+        };
+        socket.on('monitor:start_frame', handleStreamFrame);
+        socket.on('monitor:frame', handleStreamFrame);
+    }
 
     return () => {
-      // Cleanup: stop stream and remove listener
-      console.log(`Deteniendo transmisión para: ${user.nombres}`);
-      socket.emit('monitor:stop_stream', { userId: user.id });
-      socket.off('monitor:start_frame', handleStreamFrame);
-      socket.off('monitor:frame', handleStreamFrame);
+      // Cleanup
+      console.log(`Limpiando conexiones para: ${user.nombres}`);
+      
+      // Socket Viewer
+      if (viewerSocketRef.current) {
+          viewerSocketRef.current.emit("stop_screen");
+          viewerSocketRef.current.disconnect();
+          viewerSocketRef.current = null;
+      }
+
+      // Socket Principal
+      if (socket) {
+        socket.emit('monitor:stop_stream', { userId: user.id });
+        socket.off('monitor:start_frame');
+        socket.off('monitor:frame');
+      }
+
       setStreamImage(null);
+      
+      // Cleanup WebRTC
+      if (peerConnectionRef.current) {
+          peerConnectionRef.current.close();
+          peerConnectionRef.current = null;
+      }
+      setIsWebRTCConnected(false);
+      setWebRTCStatus('idle');
     };
   }, [socket, isOpen, user]);
 
@@ -195,6 +354,61 @@ const MonitorDetailModal = ({ isOpen, onClose, user, onNext, onPrev, hasNext, ha
                         <div className="w-2 h-2 rounded-full bg-[#ffbd2e]"></div>
                         <div className="w-2 h-2 rounded-full bg-[#27c93f]"></div>
                     </div>
+
+                    {/* WebRTC Video Element */}
+                    <video 
+                        ref={videoRef}
+                        autoPlay 
+                        playsInline 
+                        muted
+                        className={`absolute inset-0 w-full h-full object-cover z-20 ${isWebRTCConnected ? 'block' : 'hidden'}`}
+                        style={{ backgroundColor: '#000' }}
+                    />
+
+                    {/* WebRTC Status & Error Handling */}
+                    {webRTCStatus !== 'idle' && (
+                        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                            {/* Status Badge - Connecting */}
+                            {webRTCStatus === 'connecting' && (
+                                <div className="bg-black/70 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-sm shadow-lg flex items-center gap-3">
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    CONECTANDO AL SERVIDOR...
+                                </div>
+                            )}
+                            
+                            {/* Status Badge - Error */}
+                            {webRTCStatus === 'error' && (
+                                <div className="flex flex-col items-center gap-3 pointer-events-auto bg-black/60 p-6 rounded-xl backdrop-blur-sm">
+                                    <div className="text-red-500 bg-white/10 p-3 rounded-full">
+                                        <AlertCircle className="w-8 h-8" />
+                                    </div>
+                                    <div className="flex flex-col items-center text-center">
+                                        <span className="text-white font-bold text-sm">ERROR DE CONEXIÓN</span>
+                                        {webRTCErrorMessage && (
+                                            <span className="text-xs text-gray-300 max-w-[200px] mt-1">
+                                                {webRTCErrorMessage}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <button 
+                                        onClick={connectWebRTC}
+                                        className="bg-[#EC6317] hover:bg-[#d65812] text-white px-4 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-orange-500/20 active:scale-95"
+                                    >
+                                        <RefreshCw className="w-3.5 h-3.5" />
+                                        REINTENTAR
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Live Indicator (Only when connected) */}
+                    {webRTCStatus === 'connected' && (
+                        <div className="absolute top-2 right-2 z-30 bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg animate-pulse">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                            EN VIVO
+                        </div>
+                    )}
 
                     <img 
                       src={streamImage && typeof streamImage === 'string' ? (streamImage.startsWith('data:') ? streamImage : `data:image/jpeg;base64,${streamImage}`) : user.screenImage} 
